@@ -562,7 +562,7 @@ const handleDataUpdate = (req: express.Request, res: express.Response) => {
 
     let nextMadrasah = currentDb.madrasah;
     if (incoming.madrasah !== undefined && typeof incoming.madrasah === 'object') {
-      nextMadrasah = { ...currentDb.madrasah, ...incomingMad };
+      nextMadrasah = { ...currentDb.madrasah, ...incoming.madrasah };
     } else if (incoming.namaMadrasah !== undefined || incoming.nsm !== undefined) {
       nextMadrasah = { ...currentDb.madrasah, ...incoming };
     }
