@@ -1,0 +1,242 @@
+@import "tailwindcss";
+
+/* ==========================================================================
+   CROSS-BROWSER CONSISTENCY NORMALIZATION (Chrome, Safari, Firefox, Edge, iOS/Android)
+   ========================================================================== */
+*, *::before, *::after {
+  box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html, body {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+}
+
+/* Crisp high-fidelity rendering for Barcode, QR Code, and Seals across all browser engines */
+.crisp-barcode,
+.crisp-barcode svg,
+.crisp-barcode img,
+.crisp-qr,
+.crisp-qr img,
+.crisp-qr canvas {
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  image-rendering: pixelated;
+  shape-rendering: crispEdges;
+}
+
+/* Ensure color reproduction and backgrounds are 100% identical in screen and print */
+.card-pixel-exact,
+.card-pixel-exact * {
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+  color-adjust: exact !important;
+}
+
+@layer utilities {
+  .perspective-1000 {
+    perspective: 1000px;
+    -webkit-perspective: 1000px;
+  }
+  .transform-style-3d {
+    transform-style: preserve-3d;
+    -webkit-transform-style: preserve-3d;
+  }
+  .backface-hidden {
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+  .rotate-y-180 {
+    transform: rotateY(180deg);
+    -webkit-transform: rotateY(180deg);
+  }
+}
+
+@keyframes spinSlow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spinSlow 12s linear infinite;
+}
+
+/* PRINT MEDIA STYLES - Exact A4 & CR80 Scale (2 Columns, 4 / 8 Cards Per Sheet & Surat Keterangan Aktif) */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 0 !important;
+  }
+
+  /* Reset all root ancestors to pristine white & transparent without dark leak */
+  html,
+  body,
+  #root,
+  #root > div,
+  .min-h-screen {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+    box-shadow: none !important;
+    border: none !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Completely hide all non-printable UI elements */
+  header,
+  nav,
+  footer,
+  aside,
+  main,
+  .no-print,
+  .no-print *,
+  button,
+  input,
+  select,
+  textarea {
+    display: none !important;
+    height: 0 !important;
+    max-height: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+  }
+
+  /* Reset modal containers specifically for print - completely clean transparent/white canvas */
+  .print-modal-overlay,
+  .print-modal-container,
+  .print-modal-body,
+  .print-modal-preview-wrapper {
+    position: static !important;
+    inset: auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    min-height: 0 !important;
+    background: transparent !important;
+    background-color: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+    transform: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  /* Container for 2 Columns (4 or 8 Cards Per A4 Sheet) */
+  #printable-a4-sheet {
+    display: block !important;
+    width: 210mm !important;
+    max-width: 210mm !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Each A4 sheet with strict 1 page per sheet */
+  .a4-print-page {
+    display: block !important;
+    width: 210mm !important;
+    max-width: 210mm !important;
+    height: 297mm !important;
+    max-height: 297mm !important;
+    box-sizing: border-box !important;
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    page-break-after: always !important;
+    break-after: page !important;
+    padding: 6mm 6mm !important;
+    margin: 0 auto !important;
+    overflow: hidden !important;
+  }
+
+  .a4-print-page:last-child {
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+  }
+
+  /* 2-Column Grid on A4 */
+  .a4-card-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    justify-items: center !important;
+    align-items: center !important;
+    gap: 3mm 4mm !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    margin: 0 auto !important;
+  }
+
+  /* ID Card item slot inside 2-column grid */
+  .a4-card-slot {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    margin: 0 auto !important;
+  }
+
+  /* Retain and force card background colors, gradients, images & text */
+  .a4-card-slot,
+  .a4-card-slot *,
+  #printable-a4-sheet,
+  #printable-a4-sheet *,
+  #surat-aktif-document,
+  #surat-aktif-document * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Official Surat Keterangan Aktif Document: EXACT Single A4 Page (210mm x 297mm) */
+  #surat-aktif-document {
+    display: block !important;
+    width: 210mm !important;
+    max-width: 210mm !important;
+    min-height: 297mm !important;
+    box-sizing: border-box !important;
+    margin: 0 auto !important;
+    padding: 12mm 16mm !important;
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    box-shadow: none !important;
+    border: none !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+  }
+
+  .print-break-inside-avoid {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+}

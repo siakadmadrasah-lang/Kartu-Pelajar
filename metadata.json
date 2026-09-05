@@ -1,0 +1,6 @@
+{
+  "name": "Kartu Pelajar - MI Ma'arif NU 2 Sanggreman",
+  "description": "Aplikasi resmi pembuatan dan cetak kartu tanda pelajar MI Ma'arif NU 2 Sanggreman standar Kemenag lengkap dengan barcode/QR code dan format cetak A4/PVC.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
