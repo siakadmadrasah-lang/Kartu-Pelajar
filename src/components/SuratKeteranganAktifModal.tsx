@@ -704,7 +704,7 @@ NIP. ${madrasah.nipKepalaMadrasah || '197605122005012001'}
                         {madrasah.kemenagWilayah || `KANTOR KEMENTERIAN AGAMA ${madrasah.kotaKab?.toUpperCase() || 'KABUPATEN BANYUMAS'}`}
                       </h3>
                       <h2 className="text-[15.5px] sm:text-[16.5px] font-extrabold uppercase tracking-wide leading-tight mt-0.5 text-black">
-                        {madrasah.namaMadrasah}
+                        {madrasah.namaMadrasahKop || madrasah.namaMadrasah}
                       </h2>
                       <div className="text-[10.5px] font-normal leading-tight mt-0.5 text-neutral-800">
                         <span>NSM: {madrasah.nsm}</span>
@@ -797,7 +797,7 @@ NIP. ${madrasah.nipKepalaMadrasah || '197605122005012001'}
                     <tr>
                       <td className="py-0.5 align-top">Satuan Pendidikan</td>
                       <td className="py-0.5 align-top text-center">:</td>
-                      <td className="py-0.5 align-top">{madrasah.namaMadrasah}</td>
+                      <td className="py-0.5 align-top">{madrasah.namaSatuanPendidikan || madrasah.namaMadrasah}</td>
                     </tr>
                   </tbody>
                 </table>

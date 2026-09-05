@@ -95,7 +95,7 @@ export const CardBack: React.FC<CardBackProps> = ({
             ) : null;
           })()}
           <span className="text-[9px] font-bold tracking-wider text-amber-300 uppercase truncate max-w-[280px]">
-            {madrasah.namaMadrasah}
+            {madrasah.namaMadrasahKop || madrasah.namaMadrasah}
           </span>
         </div>
         <span className="text-[7.5px] font-semibold text-emerald-100 uppercase tracking-wider font-mono">

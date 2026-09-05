@@ -1,7 +1,9 @@
 {
   "madrasah": {
     "namaKementerian": "KEMENTERIAN AGAMA REPUBLIK INDONESIA",
-    "namaMadrasah": "TEST MADRASAH BARU",
+    "namaMadrasah": "MI MA'ARIF NU 2 SANGGREMAN",
+    "namaMadrasahKop": "MI MA'ARIF NU 2 SANGGREMAN",
+    "namaSatuanPendidikan": "MI MA'ARIF NU 2 SANGGREMAN",
     "nsm": "111233020084",
     "npsn": "60721868",
     "kemenagWilayah": "KANTOR KEMENTERIAN AGAMA KABUPATEN BANYUMAS",
@@ -151,5 +153,5 @@
       "type": "security"
     }
   ],
-  "lastUpdated": "2026-09-05T15:43:16.308Z"
+  "lastUpdated": "2026-09-05T17:27:43.912Z"
 }

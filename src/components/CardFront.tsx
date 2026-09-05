@@ -133,7 +133,7 @@ export const CardFront: React.FC<CardFrontProps> = ({
             </p>
           )}
           <h2 className="text-[11.5px] font-extrabold tracking-wide uppercase text-white leading-tight font-sans drop-shadow-sm truncate">
-            {madrasah.namaMadrasah}
+            {madrasah.namaMadrasahKop || madrasah.namaMadrasah}
           </h2>
           <div className="flex items-center justify-center gap-1.5 text-[6.8px] text-emerald-100/90 font-medium leading-none mt-0.5">
             <span>NSM: <strong className="text-amber-300 font-mono">{madrasah.nsm}</strong></span>

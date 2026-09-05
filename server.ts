@@ -58,6 +58,7 @@ const DATA_DIR = path.join(process.cwd(), 'data');
 const DB_FILE = path.join(DATA_DIR, 'database.json');
 const PERSISTENT_DB_FILE = path.join(DATA_DIR, 'persistent_database.json');
 const STUDENTS_VAULT_FILE = path.join(DATA_DIR, 'students_vault.json');
+const MADRASAH_VAULT_FILE = path.join(DATA_DIR, 'madrasah_vault.json');
 
 // Ensure data directory exists
 if (!fs.existsSync(DATA_DIR)) {
@@ -173,8 +174,9 @@ function readDb() {
   let dbData: any = null;
   let pData: any = null;
   let vaultStudents: any[] = [];
+  let vaultMadrasah: any = null;
 
-  // 1. Read permanent students vault
+  // 1. Read permanent students vault and madrasah vault
   try {
     if (fs.existsSync(STUDENTS_VAULT_FILE)) {
       const vRaw = fs.readFileSync(STUDENTS_VAULT_FILE, 'utf-8');
@@ -185,6 +187,18 @@ function readDb() {
     }
   } catch (e) {
     console.warn('Error reading STUDENTS_VAULT_FILE:', e);
+  }
+
+  try {
+    if (fs.existsSync(MADRASAH_VAULT_FILE)) {
+      const mvRaw = fs.readFileSync(MADRASAH_VAULT_FILE, 'utf-8');
+      const parsedMv = JSON.parse(mvRaw);
+      if (parsedMv && typeof parsedMv === 'object' && parsedMv.namaMadrasah) {
+        vaultMadrasah = parsedMv;
+      }
+    }
+  } catch (e) {
+    console.warn('Error reading MADRASAH_VAULT_FILE:', e);
   }
 
   // 2. Read database.json
@@ -240,12 +254,19 @@ function readDb() {
     } else if (chosen.students.length === 0 && rootBackupData && Array.isArray(rootBackupData.students) && rootBackupData.students.length > 0) {
       chosen.students = rootBackupData.students;
     }
+    // Sync madrasah from vault if present
+    if (vaultMadrasah && vaultMadrasah.namaMadrasah) {
+      chosen.madrasah = { ...chosen.madrasah, ...vaultMadrasah };
+    }
     inMemoryDb = chosen;
     return inMemoryDb;
   }
 
   // Initialize with initial database only if database file does not exist at all
   inMemoryDb = JSON.parse(JSON.stringify(INITIAL_DATABASE));
+  if (vaultMadrasah && vaultMadrasah.namaMadrasah) {
+    inMemoryDb.madrasah = vaultMadrasah;
+  }
   if (vaultStudents.length > 0) {
     inMemoryDb.students = vaultStudents;
   } else if (rootBackupData && Array.isArray(rootBackupData.students) && rootBackupData.students.length > 0) {
@@ -260,7 +281,7 @@ function writeDb(data: any, isExplicitClear: boolean = false) {
   try {
     let finalStudents = data.students;
 
-    // Check permanent vault safeguarding
+    // Check permanent students vault safeguarding
     if (Array.isArray(finalStudents) && finalStudents.length > 0) {
       // Save to permanent vault immediately
       try {
@@ -285,6 +306,15 @@ function writeDb(data: any, isExplicitClear: boolean = false) {
           }
         }
       } catch (e) {}
+    }
+
+    // Check permanent madrasah vault safeguarding
+    if (data.madrasah && typeof data.madrasah === 'object' && data.madrasah.namaMadrasah) {
+      try {
+        fs.writeFileSync(MADRASAH_VAULT_FILE, JSON.stringify(data.madrasah, null, 2), 'utf-8');
+      } catch (errVault) {
+        console.warn('Could not write MADRASAH_VAULT_FILE:', errVault);
+      }
     }
 
     const updated = {
@@ -530,10 +560,16 @@ const handleDataUpdate = (req: express.Request, res: express.Response) => {
       }
     }
 
+    let nextMadrasah = currentDb.madrasah;
+    if (incoming.madrasah !== undefined && typeof incoming.madrasah === 'object') {
+      nextMadrasah = { ...currentDb.madrasah, ...incomingMad };
+    } else if (incoming.namaMadrasah !== undefined || incoming.nsm !== undefined) {
+      nextMadrasah = { ...currentDb.madrasah, ...incoming };
+    }
+
     const merged = {
       ...currentDb,
-      ...(incoming.madrasah !== undefined ? { madrasah: { ...currentDb.madrasah, ...incoming.madrasah } } : {}),
-      ...(incoming.namaMadrasah !== undefined || incoming.nsm !== undefined ? { madrasah: { ...currentDb.madrasah, ...incoming } } : {}),
+      madrasah: nextMadrasah,
       students: nextStudents,
       ...(incoming.cardConfig !== undefined ? { cardConfig: { ...currentDb.cardConfig, ...incoming.cardConfig } } : {}),
       ...(incoming.loaderConfig !== undefined ? { loaderConfig: { ...currentDb.loaderConfig, ...incoming.loaderConfig } } : {}),

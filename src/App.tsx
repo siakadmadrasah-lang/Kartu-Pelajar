@@ -455,6 +455,14 @@ export default function App() {
           getPersistentItem<ActivityLog[]>('mi_activity_logs'),
         ]);
 
+        // If local cache lacks custom madrasah, also check permanent vault
+        if (!cachedMadrasah || isDefaultMadrasah(cachedMadrasah)) {
+          const vault = await restoreFromPermanentVault();
+          if (vault?.madrasah && !isDefaultMadrasah(vault.madrasah)) {
+            cachedMadrasah = vault.madrasah;
+          }
+        }
+
         // Attempt central server fetch (MySQL is the single source of truth!)
         const res = await fetchServerCentralState();
 
@@ -464,7 +472,14 @@ export default function App() {
 
           // 1. Hydrate Madrasah Profile from server (respect server's exact tahunPelajaran)
           if (d.madrasah && typeof d.madrasah === 'object' && d.madrasah.namaMadrasah) {
-            const cleanMadrasah = { ...d.madrasah };
+            let cleanMadrasah = { ...d.madrasah };
+            
+            // Auto-heal server if server has default template but client has custom madrasah
+            if (isDefaultMadrasah(cleanMadrasah) && cachedMadrasah && !isDefaultMadrasah(cachedMadrasah)) {
+              cleanMadrasah = { ...cachedMadrasah };
+              saveCentralServerData({ madrasah: cachedMadrasah }).catch(() => {});
+            }
+
             if (!cleanMadrasah.tahunPelajaran) {
               cleanMadrasah.tahunPelajaran = INITIAL_MADRASAH.tahunPelajaran;
             }
@@ -484,6 +499,7 @@ export default function App() {
             setPersistentItem('mi_madrasah_info', cleanMadrasah).catch(() => {});
           } else if (cachedMadrasah && cachedMadrasah.namaMadrasah) {
             setMadrasah(cachedMadrasah);
+            saveCentralServerData({ madrasah: cachedMadrasah }).catch(() => {});
           }
 
           // 2. Hydrate Students Data from server (whatever count MySQL has, ALL browsers receive the exact same count!)
@@ -666,6 +682,13 @@ export default function App() {
       saveToPermanentVault(madrasah, undefined, undefined, undefined).catch(() => {});
     } catch (e) {}
   }, [madrasah]);
+
+  // Synchronize browser tab document title with school name
+  useEffect(() => {
+    if (madrasah?.namaMadrasah) {
+      document.title = `Generator Kartu Pelajar - ${madrasah.namaMadrasah}`;
+    }
+  }, [madrasah?.namaMadrasah]);
 
   useEffect(() => {
     if (!isInitialHydratedRef.current) return;
