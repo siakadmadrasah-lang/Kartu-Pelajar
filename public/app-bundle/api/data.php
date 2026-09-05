@@ -531,10 +531,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             PRIMARY KEY (`id`)
                         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
 
-                        $stmtConf = $pdo->prepare("INSERT INTO `pengaturan_kartu` (`id`, `theme`, `config_json`) VALUES (1, :theme, :cfg) ON DUPLICATE KEY UPDATE `theme`=VALUES(`theme`), `config_json`=VALUES(`config_json`), `updated_at`=NOW()");
+                        $cfgJson = json_encode($input['cardConfig'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+                        $stmtConf = $pdo->prepare("INSERT INTO `pengaturan_kartu` (`id`, `theme`, `config_json`, `updated_at`) VALUES (1, :theme, :cfg, NOW()) ON DUPLICATE KEY UPDATE `theme`=VALUES(`theme`), `config_json`=VALUES(`config_json`), `updated_at`=NOW()");
                         $stmtConf->execute([
                             ':theme' => $theme,
-                            ':cfg' => json_encode($input['cardConfig'])
+                            ':cfg' => $cfgJson
+                        ]);
+                        $pdo->prepare("UPDATE `pengaturan_kartu` SET `theme`=:theme, `config_json`=:cfg, `updated_at`=NOW()")->execute([
+                            ':theme' => $theme,
+                            ':cfg' => $cfgJson
                         ]);
                     } catch (Exception $eConf) {
                         $mysqlError = ($mysqlError ? $mysqlError . '; ' : '') . 'Config save error: ' . $eConf->getMessage();

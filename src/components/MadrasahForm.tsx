@@ -28,7 +28,9 @@ import {
   Sliders,
   ShieldCheck,
   School,
-  Calendar
+  Calendar,
+  Check,
+  X
 } from 'lucide-react';
 import { KemenagLogo, MadrasahLogo } from './Logos';
 import { 
@@ -1191,336 +1193,566 @@ export const MadrasahForm: React.FC<MadrasahFormProps> = ({
             const isKemenagActive = config ? (config.showKemenagLogo !== false && config.logoMode !== 'right_only' && config.logoMode !== 'none' && config.logoMode !== 'madrasah_only') : true;
             const isMadrasahActive = config ? (config.showMadrasahLogo !== false && config.logoMode !== 'left_only' && config.logoMode !== 'none' && config.logoMode !== 'kemenag_only') : true;
 
+            const handleToggleKemenag = () => {
+              if (!config || !onConfigChange) return;
+              const nextKemenag = !isKemenagActive;
+              const nextMadrasah = isMadrasahActive;
+              const nextMode = nextKemenag && nextMadrasah ? 'both' : nextKemenag ? 'left_only' : nextMadrasah ? 'right_only' : 'none';
+              onConfigChange({
+                ...config,
+                showKemenagLogo: nextKemenag,
+                showMadrasahLogo: nextMadrasah,
+                logoMode: nextMode,
+              });
+              setSaveFeedback(nextKemenag ? '✓ Logo Kemenag (Kiri) Diaktifkan di Kartu' : '✕ Logo Kemenag (Kiri) Berhasil Dinonaktifkan!');
+              setTimeout(() => setSaveFeedback(null), 3500);
+            };
+
             return (
               <div className={`p-3 rounded-xl border flex flex-col items-center justify-between transition ${
                 !isKemenagActive
-                  ? 'bg-slate-950/60 border-slate-800 opacity-75'
-                  : 'bg-slate-900/70 border-slate-700/80'
+                  ? 'bg-slate-950/70 border-slate-800'
+                  : 'bg-slate-900/70 border-slate-700/80 ring-1 ring-emerald-500/20'
               }`}>
                 <div className="w-full mb-1 flex flex-col items-center">
                   <span className="text-[11px] font-bold text-slate-200 block">Logo Kiri (Kemenag)</span>
                   <span className="text-[9px] text-amber-400 block font-medium">(Kop Kartu Sisi Kiri)</span>
                   
-                  {/* Status & Toggle On/Off Logo Kiri */}
+                  {/* Status & Toggle Switch On/Off Logo Kiri */}
                   {config && onConfigChange && (
                     <button
                       type="button"
-                      onClick={() => {
-                        const nextKemenag = !isKemenagActive;
-                        const nextMadrasah = isMadrasahActive;
-                        const nextMode = nextKemenag && nextMadrasah ? 'both' : nextKemenag ? 'left_only' : nextMadrasah ? 'right_only' : 'none';
-                        onConfigChange({
-                          ...config,
-                          showKemenagLogo: nextKemenag,
-                          showMadrasahLogo: nextMadrasah,
-                          logoMode: nextMode,
-                        });
-                      }}
-                      className={`mt-1 text-[9px] font-bold px-2 py-0.5 rounded-full border transition flex items-center gap-1 ${
+                      onClick={handleToggleKemenag}
+                      className={`mt-1.5 w-full text-[10px] font-extrabold py-1 px-2 rounded-lg border transition-all flex items-center justify-center gap-1.5 shadow-xs cursor-pointer ${
                         isKemenagActive
-                          ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 hover:bg-emerald-500/30'
-                          : 'bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-750'
+                          ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/50 hover:bg-emerald-500/30'
+                          : 'bg-rose-500/20 text-rose-300 border-rose-500/50 hover:bg-rose-500/30'
                       }`}
-                      title="Klik untuk aktifkan / nonaktifkan logo kiri"
+                      title={isKemenagActive ? 'Klik untuk NONAKTIFKAN logo kiri dari kartu' : 'Klik untuk AKTIFKAN logo kiri pada kartu'}
                     >
-                      <span className={`w-1.5 h-1.5 rounded-full ${isKemenagActive ? 'bg-emerald-400' : 'bg-slate-500'}`} />
-                      <span>{isKemenagActive ? 'Aktif di Kartu' : 'Nonaktif'}</span>
+                      <span className={`w-2 h-2 rounded-full ${isKemenagActive ? 'bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.8)]' : 'bg-rose-400 shadow-[0_0_6px_rgba(244,63,94,0.8)]'}`} />
+                      <span>{isKemenagActive ? '✓ AKTIF DI KARTU' : '✕ NONAKTIF'}</span>
                     </button>
                   )}
                 </div>
-            <div className="w-14 h-14 flex items-center justify-center my-1 bg-slate-950/60 rounded-lg p-1 border border-slate-800">
-              {madrasah.logoKemenagUrl ? (
-                <img src={madrasah.logoKemenagUrl} alt="Logo Kemenag" className="w-12 h-12 object-contain drop-shadow" />
-              ) : (
-                <KemenagLogo className="w-12 h-12" />
-              )}
-            </div>
-            <input
-              type="file"
-              ref={logoKemenagRef}
-              onChange={(e) => handleFileUpload('logoKemenagUrl', e)}
-              accept="image/*"
-              className="hidden"
-            />
-            <div className="w-full space-y-1 mt-2">
-              <button
-                type="button"
-                disabled={uploadingField === 'logoKemenagUrl'}
-                onClick={() => logoKemenagRef.current?.click()}
-                className="text-[11px] font-semibold bg-slate-800 hover:bg-slate-700 text-emerald-400 px-2 py-1 rounded-lg border border-slate-600 w-full transition flex items-center justify-center gap-1 disabled:opacity-50"
-              >
-                {uploadingField === 'logoKemenagUrl' ? (
-                  <>
-                    <Loader2 className="w-3 h-3 animate-spin" />
-                    <span>Memproses...</span>
-                  </>
-                ) : (
-                  <>
-                    <Upload className="w-3 h-3" />
-                    <span>Ganti Logo</span>
-                  </>
-                )}
-              </button>
-              {madrasah.logoKemenagUrl && (
-                <button
-                  type="button"
-                  onClick={() => handleFieldChange('logoKemenagUrl', '')}
-                  className="text-[9px] text-slate-400 hover:text-rose-300 w-full"
-                >
-                  Reset Default
-                </button>
-              )}
-            </div>
-          </div>
-        );
-      })()}
+
+                <div className="relative w-16 h-16 flex items-center justify-center my-1.5 bg-slate-950/80 rounded-xl p-1 border border-slate-800 overflow-hidden">
+                  {madrasah.logoKemenagUrl ? (
+                    <img src={madrasah.logoKemenagUrl} alt="Logo Kemenag" className="w-14 h-14 object-contain drop-shadow" />
+                  ) : (
+                    <KemenagLogo className="w-14 h-14" />
+                  )}
+                  
+                  {!isKemenagActive && (
+                    <div className="absolute inset-0 bg-slate-950/85 backdrop-blur-xs flex flex-col items-center justify-center text-center p-1">
+                      <EyeOff className="w-4 h-4 text-rose-400 mb-0.5" />
+                      <span className="text-[8px] font-black text-rose-400 uppercase tracking-tighter leading-none">NONAKTIF</span>
+                      <span className="text-[7px] text-slate-400 leading-tight">Disembunyikan</span>
+                    </div>
+                  )}
+                </div>
+
+                <input
+                  type="file"
+                  ref={logoKemenagRef}
+                  onChange={(e) => handleFileUpload('logoKemenagUrl', e)}
+                  accept="image/*"
+                  className="hidden"
+                />
+
+                <div className="w-full space-y-1.5 mt-2">
+                  <button
+                    type="button"
+                    disabled={uploadingField === 'logoKemenagUrl'}
+                    onClick={() => logoKemenagRef.current?.click()}
+                    className="text-[11px] font-semibold bg-slate-800 hover:bg-slate-700 text-emerald-400 px-2 py-1 rounded-lg border border-slate-600 w-full transition flex items-center justify-center gap-1 disabled:opacity-50"
+                  >
+                    {uploadingField === 'logoKemenagUrl' ? (
+                      <>
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                        <span>Memproses...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="w-3 h-3" />
+                        <span>Ganti Logo</span>
+                      </>
+                    )}
+                  </button>
+
+                  {/* Tombol Utama Aktifkan / Nonaktifkan */}
+                  {config && onConfigChange && (
+                    <button
+                      type="button"
+                      onClick={handleToggleKemenag}
+                      className={`text-[11px] font-bold px-2 py-1 rounded-lg border w-full transition-all flex items-center justify-center gap-1.5 shadow-sm active:scale-98 cursor-pointer ${
+                        isKemenagActive
+                          ? 'bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border-rose-500/40 hover:border-rose-400'
+                          : 'bg-emerald-600 hover:bg-emerald-500 text-white border-emerald-500 font-extrabold shadow-emerald-900/30'
+                      }`}
+                    >
+                      {isKemenagActive ? (
+                        <>
+                          <EyeOff className="w-3.5 h-3.5 text-rose-400" />
+                          <span>Nonaktifkan Logo</span>
+                        </>
+                      ) : (
+                        <>
+                          <Eye className="w-3.5 h-3.5 text-emerald-200" />
+                          <span>Aktifkan di Kartu</span>
+                        </>
+                      )}
+                    </button>
+                  )}
+
+                  {madrasah.logoKemenagUrl && (
+                    <button
+                      type="button"
+                      onClick={() => handleFieldChange('logoKemenagUrl', '')}
+                      className="text-[9px] text-slate-400 hover:text-rose-300 w-full"
+                    >
+                      Reset Default Kemenag
+                    </button>
+                  )}
+                </div>
+              </div>
+            );
+          })()}
 
           {/* Logo Madrasah / Sekolah (Kop Kanan Kartu) */}
           {(() => {
             const isKemenagActive = config ? (config.showKemenagLogo !== false && config.logoMode !== 'right_only' && config.logoMode !== 'none' && config.logoMode !== 'madrasah_only') : true;
             const isMadrasahActive = config ? (config.showMadrasahLogo !== false && config.logoMode !== 'left_only' && config.logoMode !== 'none' && config.logoMode !== 'kemenag_only') : true;
 
+            const handleToggleMadrasah = () => {
+              if (!config || !onConfigChange) return;
+              const nextMadrasah = !isMadrasahActive;
+              const nextKemenag = isKemenagActive;
+              const nextMode = nextKemenag && nextMadrasah ? 'both' : nextKemenag ? 'left_only' : nextMadrasah ? 'right_only' : 'none';
+              onConfigChange({
+                ...config,
+                showKemenagLogo: nextKemenag,
+                showMadrasahLogo: nextMadrasah,
+                logoMode: nextMode,
+              });
+              setSaveFeedback(nextMadrasah ? '✓ Logo Madrasah (Kanan) Diaktifkan di Kartu' : '✕ Logo Madrasah (Kanan) Berhasil Dinonaktifkan!');
+              setTimeout(() => setSaveFeedback(null), 3500);
+            };
+
             return (
               <div className={`p-3 rounded-xl border flex flex-col items-center justify-between transition ${
                 !isMadrasahActive
-                  ? 'bg-slate-950/60 border-slate-800 opacity-75'
-                  : 'bg-slate-900/70 border-slate-700/80'
+                  ? 'bg-slate-950/70 border-slate-800'
+                  : 'bg-slate-900/70 border-slate-700/80 ring-1 ring-emerald-500/20'
               }`}>
                 <div className="w-full mb-1 flex flex-col items-center">
                   <span className="text-[11px] font-bold text-slate-200 block">Logo Kanan (Madrasah)</span>
                   <span className="text-[9px] text-emerald-400 block font-medium">(Kop Kartu Sisi Kanan)</span>
 
-                  {/* Status & Toggle On/Off Logo Kanan */}
+                  {/* Status & Toggle Switch On/Off Logo Kanan */}
                   {config && onConfigChange && (
                     <button
                       type="button"
-                      onClick={() => {
-                        const nextMadrasah = !isMadrasahActive;
-                        const nextKemenag = isKemenagActive;
-                        const nextMode = nextKemenag && nextMadrasah ? 'both' : nextKemenag ? 'left_only' : nextMadrasah ? 'right_only' : 'none';
-                        onConfigChange({
-                          ...config,
-                          showKemenagLogo: nextKemenag,
-                          showMadrasahLogo: nextMadrasah,
-                          logoMode: nextMode,
-                        });
-                      }}
-                      className={`mt-1 text-[9px] font-bold px-2 py-0.5 rounded-full border transition flex items-center gap-1 ${
+                      onClick={handleToggleMadrasah}
+                      className={`mt-1.5 w-full text-[10px] font-extrabold py-1 px-2 rounded-lg border transition-all flex items-center justify-center gap-1.5 shadow-xs cursor-pointer ${
                         isMadrasahActive
-                          ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 hover:bg-emerald-500/30'
-                          : 'bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-750'
+                          ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/50 hover:bg-emerald-500/30'
+                          : 'bg-rose-500/20 text-rose-300 border-rose-500/50 hover:bg-rose-500/30'
                       }`}
-                      title="Klik untuk aktifkan / nonaktifkan logo kanan"
+                      title={isMadrasahActive ? 'Klik untuk NONAKTIFKAN logo kanan dari kartu' : 'Klik untuk AKTIFKAN logo kanan pada kartu'}
                     >
-                      <span className={`w-1.5 h-1.5 rounded-full ${isMadrasahActive ? 'bg-emerald-400' : 'bg-slate-500'}`} />
-                      <span>{isMadrasahActive ? 'Aktif di Kartu' : 'Nonaktif'}</span>
+                      <span className={`w-2 h-2 rounded-full ${isMadrasahActive ? 'bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.8)]' : 'bg-rose-400 shadow-[0_0_6px_rgba(244,63,94,0.8)]'}`} />
+                      <span>{isMadrasahActive ? '✓ AKTIF DI KARTU' : '✕ NONAKTIF'}</span>
                     </button>
                   )}
                 </div>
-            <div className="w-14 h-14 flex items-center justify-center my-1 bg-slate-950/60 rounded-lg p-1 border border-slate-800">
-              {madrasah.logoMadrasahUrl ? (
-                <img src={madrasah.logoMadrasahUrl} alt="Logo Madrasah" className="w-12 h-12 object-contain drop-shadow" />
-              ) : (
-                <MadrasahLogo className="w-12 h-12" />
-              )}
-            </div>
-            <input
-              type="file"
-              ref={logoMadrasahRef}
-              onChange={(e) => handleFileUpload('logoMadrasahUrl', e)}
-              accept="image/*"
-              className="hidden"
-            />
-            <div className="w-full space-y-1 mt-2">
-              <button
-                type="button"
-                disabled={uploadingField === 'logoMadrasahUrl'}
-                onClick={() => logoMadrasahRef.current?.click()}
-                className="text-[11px] font-semibold bg-slate-800 hover:bg-slate-700 text-emerald-400 px-2 py-1 rounded-lg border border-slate-600 w-full transition flex items-center justify-center gap-1 disabled:opacity-50"
-              >
-                {uploadingField === 'logoMadrasahUrl' ? (
-                  <>
-                    <Loader2 className="w-3 h-3 animate-spin" />
-                    <span>Memproses...</span>
-                  </>
-                ) : (
-                  <>
-                    <Upload className="w-3 h-3" />
-                    <span>Upload Logo MI</span>
-                  </>
-                )}
-              </button>
-              {madrasah.logoMadrasahUrl && (
-                <button
-                  type="button"
-                  onClick={() => handleFieldChange('logoMadrasahUrl', '')}
-                  className="text-[9px] text-slate-400 hover:text-rose-300 w-full"
-                >
-                  Reset Default
-                </button>
-              )}
-            </div>
+
+                <div className="relative w-16 h-16 flex items-center justify-center my-1.5 bg-slate-950/80 rounded-xl p-1 border border-slate-800 overflow-hidden">
+                  {madrasah.logoMadrasahUrl ? (
+                    <img src={madrasah.logoMadrasahUrl} alt="Logo Madrasah" className="w-14 h-14 object-contain drop-shadow" />
+                  ) : (
+                    <MadrasahLogo className="w-14 h-14" />
+                  )}
+
+                  {!isMadrasahActive && (
+                    <div className="absolute inset-0 bg-slate-950/85 backdrop-blur-xs flex flex-col items-center justify-center text-center p-1">
+                      <EyeOff className="w-4 h-4 text-rose-400 mb-0.5" />
+                      <span className="text-[8px] font-black text-rose-400 uppercase tracking-tighter leading-none">NONAKTIF</span>
+                      <span className="text-[7px] text-slate-400 leading-tight">Disembunyikan</span>
+                    </div>
+                  )}
+                </div>
+
+                <input
+                  type="file"
+                  ref={logoMadrasahRef}
+                  onChange={(e) => handleFileUpload('logoMadrasahUrl', e)}
+                  accept="image/*"
+                  className="hidden"
+                />
+
+                <div className="w-full space-y-1.5 mt-2">
+                  <button
+                    type="button"
+                    disabled={uploadingField === 'logoMadrasahUrl'}
+                    onClick={() => logoMadrasahRef.current?.click()}
+                    className="text-[11px] font-semibold bg-slate-800 hover:bg-slate-700 text-emerald-400 px-2 py-1 rounded-lg border border-slate-600 w-full transition flex items-center justify-center gap-1 disabled:opacity-50"
+                  >
+                    {uploadingField === 'logoMadrasahUrl' ? (
+                      <>
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                        <span>Memproses...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="w-3 h-3" />
+                        <span>Upload Logo MI</span>
+                      </>
+                    )}
+                  </button>
+
+                  {/* Tombol Utama Aktifkan / Nonaktifkan */}
+                  {config && onConfigChange && (
+                    <button
+                      type="button"
+                      onClick={handleToggleMadrasah}
+                      className={`text-[11px] font-bold px-2 py-1 rounded-lg border w-full transition-all flex items-center justify-center gap-1.5 shadow-sm active:scale-98 cursor-pointer ${
+                        isMadrasahActive
+                          ? 'bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border-rose-500/40 hover:border-rose-400'
+                          : 'bg-emerald-600 hover:bg-emerald-500 text-white border-emerald-500 font-extrabold shadow-emerald-900/30'
+                      }`}
+                    >
+                      {isMadrasahActive ? (
+                        <>
+                          <EyeOff className="w-3.5 h-3.5 text-rose-400" />
+                          <span>Nonaktifkan Logo</span>
+                        </>
+                      ) : (
+                        <>
+                          <Eye className="w-3.5 h-3.5 text-emerald-200" />
+                          <span>Aktifkan di Kartu</span>
+                        </>
+                      )}
+                    </button>
+                  )}
+
+                  {madrasah.logoMadrasahUrl && (
+                    <button
+                      type="button"
+                      onClick={() => handleFieldChange('logoMadrasahUrl', '')}
+                      className="text-[9px] text-slate-400 hover:text-rose-300 w-full"
+                    >
+                      Reset Default MI
+                    </button>
+                  )}
+                </div>
               </div>
             );
           })()}
 
           {/* Stempel Cap Basah Kartu */}
-          <div className="p-3 bg-slate-900/70 rounded-xl border border-slate-700/80 flex flex-col items-center justify-between">
-            <div className="w-full mb-1">
-              <span className="text-[11px] font-bold text-slate-200 block">Stempel Cap</span>
-              <span className="text-[9px] text-violet-400 block font-medium">(Auto Transparan)</span>
-            </div>
-            <div 
-              className="w-14 h-14 flex items-center justify-center my-1 rounded-lg p-1 border border-slate-700"
-              style={{
-                backgroundImage: `linear-gradient(45deg, #1e293b 25%, transparent 25%), 
-                                  linear-gradient(-45deg, #1e293b 25%, transparent 25%), 
-                                  linear-gradient(45deg, transparent 75%, #1e293b 75%), 
-                                  linear-gradient(-45deg, transparent 75%, #1e293b 75%)`,
-                backgroundSize: '8px 8px',
-                backgroundPosition: '0 0, 0 4px, 4px -4px, -4px 0px',
-                backgroundColor: '#0f172a'
-              }}
-            >
-              {madrasah.stempelUrl ? (
-                <img src={madrasah.stempelUrl} alt="Stempel Transparan" className="w-12 h-12 object-contain filter drop-shadow-sm" />
-              ) : (
-                <div className="text-center">
-                  <Stamp className="w-6 h-6 text-violet-400 mx-auto" />
-                  <span className="text-violet-400 text-[8px] font-bold block mt-0.5">Auto Stamp</span>
-                </div>
-              )}
-            </div>
-            <input
-              type="file"
-              ref={stempelRef}
-              onChange={(e) => handleFileUpload('stempelUrl', e)}
-              accept="image/*"
-              className="hidden"
-            />
-            <div className="w-full space-y-1 mt-2">
-              <button
-                type="button"
-                disabled={uploadingField === 'stempelUrl'}
-                onClick={() => stempelRef.current?.click()}
-                className="text-[11px] font-semibold bg-slate-800 hover:bg-slate-700 text-violet-400 px-2 py-1 rounded-lg border border-slate-600 w-full transition flex items-center justify-center gap-1 disabled:opacity-50"
-              >
-                {uploadingField === 'stempelUrl' ? (
-                  <>
-                    <Loader2 className="w-3 h-3 animate-spin" />
-                    <span>Memproses...</span>
-                  </>
-                ) : (
-                  <>
-                    <Upload className="w-3 h-3" />
-                    <span>Upload Cap</span>
-                  </>
-                )}
-              </button>
+          {(() => {
+            const isStampActive = config ? config.showStamp !== false : true;
 
-              {madrasah.stempelUrl && (
-                <div className="flex flex-col gap-1">
+            const handleToggleStamp = () => {
+              if (!config || !onConfigChange) return;
+              const nextStamp = !isStampActive;
+              onConfigChange({
+                ...config,
+                showStamp: nextStamp,
+              });
+              setSaveFeedback(nextStamp ? '✓ Stempel Cap Diaktifkan di Kartu' : '✕ Stempel Cap Berhasil Dinonaktifkan!');
+              setTimeout(() => setSaveFeedback(null), 3500);
+            };
+
+            return (
+              <div className={`p-3 rounded-xl border flex flex-col items-center justify-between transition ${
+                !isStampActive
+                  ? 'bg-slate-950/70 border-slate-800'
+                  : 'bg-slate-900/70 border-slate-700/80 ring-1 ring-violet-500/20'
+              }`}>
+                <div className="w-full mb-1 flex flex-col items-center">
+                  <span className="text-[11px] font-bold text-slate-200 block">Stempel Cap</span>
+                  <span className="text-[9px] text-violet-400 block font-medium">(Auto Transparan)</span>
+
+                  {config && onConfigChange && (
+                    <button
+                      type="button"
+                      onClick={handleToggleStamp}
+                      className={`mt-1.5 w-full text-[10px] font-extrabold py-1 px-2 rounded-lg border transition-all flex items-center justify-center gap-1.5 shadow-xs cursor-pointer ${
+                        isStampActive
+                          ? 'bg-violet-500/20 text-violet-300 border-violet-500/50 hover:bg-violet-500/30'
+                          : 'bg-rose-500/20 text-rose-300 border-rose-500/50 hover:bg-rose-500/30'
+                      }`}
+                      title={isStampActive ? 'Klik untuk NONAKTIFKAN stempel dari kartu' : 'Klik untuk AKTIFKAN stempel pada kartu'}
+                    >
+                      <span className={`w-2 h-2 rounded-full ${isStampActive ? 'bg-violet-400 shadow-[0_0_6px_rgba(167,139,250,0.8)]' : 'bg-rose-400 shadow-[0_0_6px_rgba(244,63,94,0.8)]'}`} />
+                      <span>{isStampActive ? '✓ AKTIF DI KARTU' : '✕ NONAKTIF'}</span>
+                    </button>
+                  )}
+                </div>
+
+                <div 
+                  className="relative w-16 h-16 flex items-center justify-center my-1.5 rounded-xl p-1 border border-slate-700 overflow-hidden"
+                  style={{
+                    backgroundImage: `linear-gradient(45deg, #1e293b 25%, transparent 25%), 
+                                      linear-gradient(-45deg, #1e293b 25%, transparent 25%), 
+                                      linear-gradient(45deg, transparent 75%, #1e293b 75%), 
+                                      linear-gradient(-45deg, transparent 75%, #1e293b 75%)`,
+                    backgroundSize: '8px 8px',
+                    backgroundPosition: '0 0, 0 4px, 4px -4px, -4px 0px',
+                    backgroundColor: '#0f172a'
+                  }}
+                >
+                  {madrasah.stempelUrl ? (
+                    <img src={madrasah.stempelUrl} alt="Stempel Transparan" className="w-14 h-14 object-contain filter drop-shadow-sm" />
+                  ) : (
+                    <div className="text-center">
+                      <Stamp className="w-6 h-6 text-violet-400 mx-auto" />
+                      <span className="text-violet-400 text-[8px] font-bold block mt-0.5">Auto Stamp</span>
+                    </div>
+                  )}
+
+                  {!isStampActive && (
+                    <div className="absolute inset-0 bg-slate-950/85 backdrop-blur-xs flex flex-col items-center justify-center text-center p-1">
+                      <EyeOff className="w-4 h-4 text-rose-400 mb-0.5" />
+                      <span className="text-[8px] font-black text-rose-400 uppercase tracking-tighter leading-none">NONAKTIF</span>
+                      <span className="text-[7px] text-slate-400 leading-tight">Disembunyikan</span>
+                    </div>
+                  )}
+                </div>
+
+                <input
+                  type="file"
+                  ref={stempelRef}
+                  onChange={(e) => handleFileUpload('stempelUrl', e)}
+                  accept="image/*"
+                  className="hidden"
+                />
+
+                <div className="w-full space-y-1.5 mt-2">
                   <button
                     type="button"
                     disabled={uploadingField === 'stempelUrl'}
-                    onClick={() => handleMakeTransparentManual('stempelUrl')}
-                    className="text-[9px] bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 px-1 py-0.5 rounded border border-amber-500/40 w-full flex items-center justify-center gap-1 transition disabled:opacity-50"
-                    title="Hilangkan background putih stempel"
+                    onClick={() => stempelRef.current?.click()}
+                    className="text-[11px] font-semibold bg-slate-800 hover:bg-slate-700 text-violet-400 px-2 py-1 rounded-lg border border-slate-600 w-full transition flex items-center justify-center gap-1 disabled:opacity-50"
                   >
-                    <Wand2 className="w-2.5 h-2.5" />
-                    <span>✨ Transparan</span>
+                    {uploadingField === 'stempelUrl' ? (
+                      <>
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                        <span>Memproses...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="w-3 h-3" />
+                        <span>Upload Cap</span>
+                      </>
+                    )}
                   </button>
 
-                  <button
-                    type="button"
-                    onClick={() => handleFieldChange('stempelUrl', '')}
-                    className="text-[9px] text-slate-400 hover:text-rose-300 w-full text-center"
-                  >
-                    Reset Auto Stamp
-                  </button>
+                  {/* Tombol Utama Aktifkan / Nonaktifkan Stempel */}
+                  {config && onConfigChange && (
+                    <button
+                      type="button"
+                      onClick={handleToggleStamp}
+                      className={`text-[11px] font-bold px-2 py-1 rounded-lg border w-full transition-all flex items-center justify-center gap-1.5 shadow-sm active:scale-98 cursor-pointer ${
+                        isStampActive
+                          ? 'bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border-rose-500/40 hover:border-rose-400'
+                          : 'bg-violet-600 hover:bg-violet-500 text-white border-violet-500 font-extrabold shadow-violet-900/30'
+                      }`}
+                    >
+                      {isStampActive ? (
+                        <>
+                          <EyeOff className="w-3.5 h-3.5 text-rose-400" />
+                          <span>Nonaktifkan Cap</span>
+                        </>
+                      ) : (
+                        <>
+                          <Eye className="w-3.5 h-3.5 text-violet-200" />
+                          <span>Aktifkan di Kartu</span>
+                        </>
+                      )}
+                    </button>
+                  )}
+
+                  {madrasah.stempelUrl && (
+                    <div className="flex flex-col gap-1">
+                      <button
+                        type="button"
+                        disabled={uploadingField === 'stempelUrl'}
+                        onClick={() => handleMakeTransparentManual('stempelUrl')}
+                        className="text-[9px] bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 px-1 py-0.5 rounded border border-amber-500/40 w-full flex items-center justify-center gap-1 transition disabled:opacity-50"
+                        title="Hilangkan background putih stempel"
+                      >
+                        <Wand2 className="w-2.5 h-2.5" />
+                        <span>✨ Transparan</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleFieldChange('stempelUrl', '')}
+                        className="text-[9px] text-slate-400 hover:text-rose-300 w-full text-center"
+                      >
+                        Reset Auto Stamp
+                      </button>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-          </div>
+              </div>
+            );
+          })()}
 
           {/* Tanda Tangan Kepala Madrasah */}
-          <div className="p-3 bg-slate-900/70 rounded-xl border border-slate-700/80 flex flex-col items-center justify-between">
-            <div className="w-full mb-1">
-              <span className="text-[11px] font-bold text-slate-200 block">TTD Pejabat</span>
-              <span className="text-[9px] text-blue-400 block font-medium">(Auto Transparan)</span>
-            </div>
-            <div 
-              className="w-14 h-14 flex items-center justify-center my-1 rounded-lg p-1 border border-slate-700"
-              style={{
-                backgroundImage: `linear-gradient(45deg, #1e293b 25%, transparent 25%), 
-                                  linear-gradient(-45deg, #1e293b 25%, transparent 25%), 
-                                  linear-gradient(45deg, transparent 75%, #1e293b 75%), 
-                                  linear-gradient(-45deg, transparent 75%, #1e293b 75%)`,
-                backgroundSize: '8px 8px',
-                backgroundPosition: '0 0, 0 4px, 4px -4px, -4px 0px',
-                backgroundColor: '#0f172a'
-              }}
-            >
-              {madrasah.ttdKepalaUrl ? (
-                <img src={madrasah.ttdKepalaUrl} alt="TTD Transparan" className="w-12 h-12 object-contain filter drop-shadow-sm" />
-              ) : (
-                <div className="text-center">
-                  <PenTool className="w-6 h-6 text-blue-400 mx-auto" />
-                  <span className="text-blue-400 text-[8px] font-bold block mt-0.5">Auto TTD</span>
-                </div>
-              )}
-            </div>
-            <input
-              type="file"
-              ref={ttdRef}
-              onChange={(e) => handleFileUpload('ttdKepalaUrl', e)}
-              accept="image/*"
-              className="hidden"
-            />
-            <div className="w-full space-y-1 mt-2">
-              <button
-                type="button"
-                disabled={uploadingField === 'ttdKepalaUrl'}
-                onClick={() => ttdRef.current?.click()}
-                className="text-[11px] font-semibold bg-slate-800 hover:bg-slate-700 text-blue-400 px-2 py-1 rounded-lg border border-slate-600 w-full transition flex items-center justify-center gap-1 disabled:opacity-50"
-              >
-                {uploadingField === 'ttdKepalaUrl' ? (
-                  <>
-                    <Loader2 className="w-3 h-3 animate-spin" />
-                    <span>Memproses...</span>
-                  </>
-                ) : (
-                  <>
-                    <Upload className="w-3 h-3" />
-                    <span>Upload TTD</span>
-                  </>
-                )}
-              </button>
+          {(() => {
+            const isSigActive = config ? config.showSignature !== false : true;
 
-              {madrasah.ttdKepalaUrl && (
-                <div className="flex flex-col gap-1">
+            const handleToggleSig = () => {
+              if (!config || !onConfigChange) return;
+              const nextSig = !isSigActive;
+              onConfigChange({
+                ...config,
+                showSignature: nextSig,
+              });
+              setSaveFeedback(nextSig ? '✓ Tanda Tangan Diaktifkan di Kartu' : '✕ Tanda Tangan Berhasil Dinonaktifkan!');
+              setTimeout(() => setSaveFeedback(null), 3500);
+            };
+
+            return (
+              <div className={`p-3 rounded-xl border flex flex-col items-center justify-between transition ${
+                !isSigActive
+                  ? 'bg-slate-950/70 border-slate-800'
+                  : 'bg-slate-900/70 border-slate-700/80 ring-1 ring-blue-500/20'
+              }`}>
+                <div className="w-full mb-1 flex flex-col items-center">
+                  <span className="text-[11px] font-bold text-slate-200 block">TTD Pejabat</span>
+                  <span className="text-[9px] text-blue-400 block font-medium">(Auto Transparan)</span>
+
+                  {config && onConfigChange && (
+                    <button
+                      type="button"
+                      onClick={handleToggleSig}
+                      className={`mt-1.5 w-full text-[10px] font-extrabold py-1 px-2 rounded-lg border transition-all flex items-center justify-center gap-1.5 shadow-xs cursor-pointer ${
+                        isSigActive
+                          ? 'bg-blue-500/20 text-blue-300 border-blue-500/50 hover:bg-blue-500/30'
+                          : 'bg-rose-500/20 text-rose-300 border-rose-500/50 hover:bg-rose-500/30'
+                      }`}
+                      title={isSigActive ? 'Klik untuk NONAKTIFKAN tanda tangan dari kartu' : 'Klik untuk AKTIFKAN tanda tangan pada kartu'}
+                    >
+                      <span className={`w-2 h-2 rounded-full ${isSigActive ? 'bg-blue-400 shadow-[0_0_6px_rgba(96,165,250,0.8)]' : 'bg-rose-400 shadow-[0_0_6px_rgba(244,63,94,0.8)]'}`} />
+                      <span>{isSigActive ? '✓ AKTIF DI KARTU' : '✕ NONAKTIF'}</span>
+                    </button>
+                  )}
+                </div>
+
+                <div 
+                  className="relative w-16 h-16 flex items-center justify-center my-1.5 rounded-xl p-1 border border-slate-700 overflow-hidden"
+                  style={{
+                    backgroundImage: `linear-gradient(45deg, #1e293b 25%, transparent 25%), 
+                                      linear-gradient(-45deg, #1e293b 25%, transparent 25%), 
+                                      linear-gradient(45deg, transparent 75%, #1e293b 75%), 
+                                      linear-gradient(-45deg, transparent 75%, #1e293b 75%)`,
+                    backgroundSize: '8px 8px',
+                    backgroundPosition: '0 0, 0 4px, 4px -4px, -4px 0px',
+                    backgroundColor: '#0f172a'
+                  }}
+                >
+                  {madrasah.ttdKepalaUrl ? (
+                    <img src={madrasah.ttdKepalaUrl} alt="TTD Transparan" className="w-14 h-14 object-contain filter drop-shadow-sm" />
+                  ) : (
+                    <div className="text-center">
+                      <PenTool className="w-6 h-6 text-blue-400 mx-auto" />
+                      <span className="text-blue-400 text-[8px] font-bold block mt-0.5">Auto TTD</span>
+                    </div>
+                  )}
+
+                  {!isSigActive && (
+                    <div className="absolute inset-0 bg-slate-950/85 backdrop-blur-xs flex flex-col items-center justify-center text-center p-1">
+                      <EyeOff className="w-4 h-4 text-rose-400 mb-0.5" />
+                      <span className="text-[8px] font-black text-rose-400 uppercase tracking-tighter leading-none">NONAKTIF</span>
+                      <span className="text-[7px] text-slate-400 leading-tight">Disembunyikan</span>
+                    </div>
+                  )}
+                </div>
+
+                <input
+                  type="file"
+                  ref={ttdRef}
+                  onChange={(e) => handleFileUpload('ttdKepalaUrl', e)}
+                  accept="image/*"
+                  className="hidden"
+                />
+
+                <div className="w-full space-y-1.5 mt-2">
                   <button
                     type="button"
                     disabled={uploadingField === 'ttdKepalaUrl'}
-                    onClick={() => handleMakeTransparentManual('ttdKepalaUrl')}
-                    className="text-[9px] bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 px-1 py-0.5 rounded border border-amber-500/40 w-full flex items-center justify-center gap-1 transition disabled:opacity-50"
-                    title="Hilangkan background kertas tanda tangan"
+                    onClick={() => ttdRef.current?.click()}
+                    className="text-[11px] font-semibold bg-slate-800 hover:bg-slate-700 text-blue-400 px-2 py-1 rounded-lg border border-slate-600 w-full transition flex items-center justify-center gap-1 disabled:opacity-50"
                   >
-                    <Wand2 className="w-2.5 h-2.5" />
-                    <span>✨ Transparan</span>
+                    {uploadingField === 'ttdKepalaUrl' ? (
+                      <>
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                        <span>Memproses...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="w-3 h-3" />
+                        <span>Upload TTD</span>
+                      </>
+                    )}
                   </button>
 
-                  <button
-                    type="button"
-                    onClick={() => handleFieldChange('ttdKepalaUrl', '')}
-                    className="text-[9px] text-slate-400 hover:text-rose-300 w-full text-center"
-                  >
-                    Reset Auto TTD
-                  </button>
+                  {/* Tombol Utama Aktifkan / Nonaktifkan TTD */}
+                  {config && onConfigChange && (
+                    <button
+                      type="button"
+                      onClick={handleToggleSig}
+                      className={`text-[11px] font-bold px-2 py-1 rounded-lg border w-full transition-all flex items-center justify-center gap-1.5 shadow-sm active:scale-98 cursor-pointer ${
+                        isSigActive
+                          ? 'bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border-rose-500/40 hover:border-rose-400'
+                          : 'bg-blue-600 hover:bg-blue-500 text-white border-blue-500 font-extrabold shadow-blue-900/30'
+                      }`}
+                    >
+                      {isSigActive ? (
+                        <>
+                          <EyeOff className="w-3.5 h-3.5 text-rose-400" />
+                          <span>Nonaktifkan TTD</span>
+                        </>
+                      ) : (
+                        <>
+                          <Eye className="w-3.5 h-3.5 text-blue-200" />
+                          <span>Aktifkan di Kartu</span>
+                        </>
+                      )}
+                    </button>
+                  )}
+
+                  {madrasah.ttdKepalaUrl && (
+                    <div className="flex flex-col gap-1">
+                      <button
+                        type="button"
+                        disabled={uploadingField === 'ttdKepalaUrl'}
+                        onClick={() => handleMakeTransparentManual('ttdKepalaUrl')}
+                        className="text-[9px] bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 px-1 py-0.5 rounded border border-amber-500/40 w-full flex items-center justify-center gap-1 transition disabled:opacity-50"
+                        title="Hilangkan background kertas tanda tangan"
+                      >
+                        <Wand2 className="w-2.5 h-2.5" />
+                        <span>✨ Transparan</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleFieldChange('ttdKepalaUrl', '')}
+                        className="text-[9px] text-slate-400 hover:text-rose-300 w-full text-center"
+                      >
+                        Reset Auto TTD
+                      </button>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-          </div>
+              </div>
+            );
+          })()}
         </div>
       </div>
 

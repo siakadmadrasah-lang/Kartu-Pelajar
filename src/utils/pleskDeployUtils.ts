@@ -1049,10 +1049,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // 2. Simpan Pengaturan Desain Kartu & Loader
             if (isset($input['cardConfig']) && is_array($input['cardConfig'])) {
                 $theme = (string)($input['cardConfig']['theme'] ?? 'kemenag-green');
-                $stmtConf = $pdo->prepare("INSERT INTO pengaturan_kartu (id, theme, config_json) VALUES (1, :theme, :cfg) ON DUPLICATE KEY UPDATE theme=:theme, config_json=:cfg");
+                $cfgJson = json_encode($input['cardConfig'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+                $stmtConf = $pdo->prepare("INSERT INTO pengaturan_kartu (id, theme, config_json, updated_at) VALUES (1, :theme, :cfg, NOW()) ON DUPLICATE KEY UPDATE theme=VALUES(theme), config_json=VALUES(config_json), updated_at=NOW()");
                 $stmtConf->execute([
                     ':theme' => $theme,
-                    ':cfg' => json_encode($input['cardConfig'])
+                    ':cfg' => $cfgJson
+                ]);
+                $pdo->prepare("UPDATE pengaturan_kartu SET theme=:theme, config_json=:cfg, updated_at=NOW()")->execute([
+                    ':theme' => $theme,
+                    ':cfg' => $cfgJson
                 ]);
             }
 

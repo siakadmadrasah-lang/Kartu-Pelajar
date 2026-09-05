@@ -12,7 +12,9 @@ import {
   Sparkles,
   Plus,
   Trash2,
-  CheckCircle2
+  CheckCircle2,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 
 interface DesignSettingsProps {
@@ -263,21 +265,21 @@ export const DesignSettings: React.FC<DesignSettingsProps> = ({
                     logoMode: nextMode,
                   });
                 }}
-                className={`w-full py-2 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-2 ${
+                className={`w-full py-2 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer ${
                   isLeftActive
-                    ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm'
-                    : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700'
+                    ? 'bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/50'
+                    : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm'
                 }`}
               >
                 {isLeftActive ? (
                   <>
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-200" />
-                    <span>Aktif (Klik untuk Nonaktifkan)</span>
+                    <EyeOff className="w-3.5 h-3.5 text-rose-400" />
+                    <span>✕ Nonaktifkan Logo Kiri</span>
                   </>
                 ) : (
                   <>
-                    <span className="w-2 h-2 rounded-full bg-slate-500" />
-                    <span>Nonaktif (Klik untuk Aktifkan)</span>
+                    <Eye className="w-3.5 h-3.5 text-emerald-200" />
+                    <span>✓ Aktifkan Logo Kiri</span>
                   </>
                 )}
               </button>
@@ -353,21 +355,21 @@ export const DesignSettings: React.FC<DesignSettingsProps> = ({
                     logoMode: nextMode,
                   });
                 }}
-                className={`w-full py-2 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-2 ${
+                className={`w-full py-2 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer ${
                   isRightActive
-                    ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm'
-                    : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700'
+                    ? 'bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/50'
+                    : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm'
                 }`}
               >
                 {isRightActive ? (
                   <>
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-200" />
-                    <span>Aktif (Klik untuk Nonaktifkan)</span>
+                    <EyeOff className="w-3.5 h-3.5 text-rose-400" />
+                    <span>✕ Nonaktifkan Logo Kanan</span>
                   </>
                 ) : (
                   <>
-                    <span className="w-2 h-2 rounded-full bg-slate-500" />
-                    <span>Nonaktif (Klik untuk Aktifkan)</span>
+                    <Eye className="w-3.5 h-3.5 text-emerald-200" />
+                    <span>✓ Aktifkan Logo Kanan</span>
                   </>
                 )}
               </button>

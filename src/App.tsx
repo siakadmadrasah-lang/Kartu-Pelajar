@@ -535,6 +535,18 @@ export default function App() {
               ...(cachedConfig || {}),
               ...d.cardConfig,
             };
+            if (d.cardConfig.showKemenagLogo === false || d.cardConfig.logoMode === 'right_only' || d.cardConfig.logoMode === 'none' || d.cardConfig.logoMode === 'madrasah_only') {
+              cleanConfig.showKemenagLogo = false;
+            }
+            if (d.cardConfig.showMadrasahLogo === false || d.cardConfig.logoMode === 'left_only' || d.cardConfig.logoMode === 'none' || d.cardConfig.logoMode === 'kemenag_only') {
+              cleanConfig.showMadrasahLogo = false;
+            }
+            if (d.cardConfig.showStamp === false) {
+              cleanConfig.showStamp = false;
+            }
+            if (d.cardConfig.showSignature === false) {
+              cleanConfig.showSignature = false;
+            }
             setCardConfig(cleanConfig);
             cardConfigRef.current = cleanConfig;
             try {
@@ -985,6 +997,18 @@ export default function App() {
                   ...cardConfigRef.current,
                   ...d.cardConfig,
                 };
+                if (d.cardConfig.showKemenagLogo === false || d.cardConfig.logoMode === 'right_only' || d.cardConfig.logoMode === 'none' || d.cardConfig.logoMode === 'madrasah_only') {
+                  mergedConfig.showKemenagLogo = false;
+                }
+                if (d.cardConfig.showMadrasahLogo === false || d.cardConfig.logoMode === 'left_only' || d.cardConfig.logoMode === 'none' || d.cardConfig.logoMode === 'kemenag_only') {
+                  mergedConfig.showMadrasahLogo = false;
+                }
+                if (d.cardConfig.showStamp === false) {
+                  mergedConfig.showStamp = false;
+                }
+                if (d.cardConfig.showSignature === false) {
+                  mergedConfig.showSignature = false;
+                }
                 setCardConfig(mergedConfig);
                 cardConfigRef.current = mergedConfig;
                 try {
