@@ -67,6 +67,8 @@ export interface MadrasahInfo {
   showMadrasahInHeader?: boolean; // Tampilkan nama madrasah sebagai sub-judul / label di header
   logoKemenagUrl?: string;  // Logo Kemenag RI di kop kiri kartu
   logoMadrasahUrl?: string; // Logo Madrasah / Sekolah di kop kanan kartu
+  logoKiriUrl?: string;     // Alias logo kiri (Kemenag / Instansi)
+  logoKananUrl?: string;    // Alias logo kanan (Madrasah / Sekolah)
   stempelUrl?: string;      // Stempel cap basah kartu
   ttdKepalaUrl?: string;    // Tanda tangan pejabat pengesahan kartu
 }

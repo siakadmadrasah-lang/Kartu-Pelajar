@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { KopSuratConfig, MadrasahInfo, CardConfig } from '../types';
+import { KopSuratConfig, MadrasahInfo, CardConfig, KopSuratLayoutPreset } from '../types';
 import { 
   Building2, 
   FileText, 

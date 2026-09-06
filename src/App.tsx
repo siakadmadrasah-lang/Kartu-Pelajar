@@ -2257,27 +2257,6 @@ export default function App() {
                       <div className="text-[10px] text-slate-400 font-normal">Format Resmi Kemenag A4/F4</div>
                     </div>
                   </button>
-
-                  <button
-                    onClick={() => {
-                      setIsKopSuratModalOpen(true);
-                      addLog('Modul Kop Surat', 'Membuka Modul Pengelolaan Kop Surat Mandiri', 'edit');
-                    }}
-                    className="p-3.5 bg-slate-800 hover:bg-slate-750 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-2.5 border border-slate-700 hover:border-emerald-500/50 transition active:scale-95 text-left sm:col-span-2"
-                  >
-                    <div className="p-2 bg-emerald-500/10 rounded-lg">
-                      <FileText className="w-5 h-5 text-emerald-400" />
-                    </div>
-                    <div>
-                      <div className="font-extrabold text-white text-xs flex items-center gap-2">
-                        <span>Modul Kop Surat Mandiri & Full Edit</span>
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                          Baru
-                        </span>
-                      </div>
-                      <div className="text-[10px] text-slate-400 font-normal">Kelola 6 baris judul, logo kemenag/madrasah, garis resmi, dan ekspor Word</div>
-                    </div>
-                  </button>
                 </div>
               </div>
             </div>
@@ -2598,7 +2577,7 @@ export default function App() {
         onSelectStudent={(s) => setSelectedStudentId(s.id)}
         cardConfig={cardConfig}
         kopSuratConfig={kopConfig}
-        onOpenKopManager={() => setIsKopSuratModalOpen(true)}
+        onOpenKopManager={currentUser ? () => setIsKopSuratModalOpen(true) : undefined}
       />
 
       {/* MODUL KOP SURAT MANDIRI & FULL EDIT MODAL */}
