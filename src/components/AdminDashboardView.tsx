@@ -48,6 +48,8 @@ import { StudentForm } from './StudentForm';
 import { MadrasahForm } from './MadrasahForm';
 import { DesignSettings } from './DesignSettings';
 import { KopSuratManager } from './KopSuratManager';
+import { HeaderBrandingManager } from './HeaderBrandingManager';
+import { PageLoaderManager } from './PageLoaderManager';
 
 interface AdminDashboardViewProps {
   currentUser: AdminUser | null;
@@ -114,7 +116,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
   onRefreshFromServer,
   lastServerUpdate,
 }) => {
-  const [activeDashboardTab, setActiveDashboardTab] = useState<'students' | 'madrasah' | 'kopsurat' | 'signature' | 'design' | 'logs'>('students');
+  const [activeDashboardTab, setActiveDashboardTab] = useState<'students' | 'madrasah' | 'header-branding' | 'page-loader' | 'kopsurat' | 'signature' | 'design' | 'logs'>('students');
   const [searchTerm, setSearchTerm] = useState('');
   const [classFilter, setClassFilter] = useState('ALL');
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
@@ -517,7 +519,31 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
           }`}
         >
           <Building2 className="w-4 h-4" />
-          <span>2. Profil Madrasah & Legalitas</span>
+          <span>2. Profil Madrasah</span>
+        </button>
+
+        <button
+          onClick={() => setActiveDashboardTab('header-branding')}
+          className={`py-2 px-4 rounded-xl text-xs font-bold flex items-center gap-2 transition ${
+            activeDashboardTab === 'header-branding'
+              ? 'bg-amber-500 text-slate-950 font-extrabold shadow-sm'
+              : 'text-slate-400 hover:text-white hover:bg-slate-800'
+          }`}
+        >
+          <Sparkles className="w-4 h-4 text-amber-400" />
+          <span>3. Branding Header Web</span>
+        </button>
+
+        <button
+          onClick={() => setActiveDashboardTab('page-loader')}
+          className={`py-2 px-4 rounded-xl text-xs font-bold flex items-center gap-2 transition ${
+            activeDashboardTab === 'page-loader'
+              ? 'bg-emerald-600 text-white shadow-sm'
+              : 'text-slate-400 hover:text-white hover:bg-slate-800'
+          }`}
+        >
+          <Layers className="w-4 h-4 text-emerald-400" />
+          <span>4. Logo Page Loader</span>
         </button>
 
         <button
@@ -529,7 +555,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
           }`}
         >
           <FileText className="w-4 h-4" />
-          <span>3. Modul Kop Surat (Mandiri)</span>
+          <span>5. Modul Kop Surat (Mandiri)</span>
         </button>
 
         <button
@@ -541,7 +567,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
           }`}
         >
           <PenTool className="w-4 h-4" />
-          <span>4. Penandatanganan & Stempel</span>
+          <span>6. Penandatanganan & Stempel</span>
         </button>
 
         <button
@@ -553,7 +579,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
           }`}
         >
           <Palette className="w-4 h-4" />
-          <span>5. Desain & Format Kartu</span>
+          <span>7. Desain & Format Kartu</span>
         </button>
 
         <button
@@ -565,7 +591,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
           }`}
         >
           <History className="w-4 h-4" />
-          <span>6. Log Audit ({activityLogs.length})</span>
+          <span>8. Log Audit ({activityLogs.length})</span>
         </button>
       </div>
 
@@ -863,6 +889,29 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
             onOpenPageLoaderSettings={onOpenPageLoaderSettings}
             studentsCount={students.length}
             onApplyTahunPelajaranToAllStudents={handleApplyTahunPelajaranToAllStudents}
+          />
+        </div>
+      )}
+
+      {/* TAB CONTENT 3: MODUL JUDUL & BRANDING HEADER MANDIRI */}
+      {activeDashboardTab === 'header-branding' && (
+        <div className="bg-slate-900/90 rounded-2xl border border-slate-800 p-5 space-y-4 shadow-xl">
+          <HeaderBrandingManager
+            madrasah={madrasah}
+            onChange={onUpdateMadrasah}
+            onSave={onExplicitSaveMadrasah || onUpdateMadrasah}
+          />
+        </div>
+      )}
+
+      {/* TAB CONTENT 4: MODUL LOGO & ANIMASI PAGE LOADER MANDIRI */}
+      {activeDashboardTab === 'page-loader' && (
+        <div className="bg-slate-900/90 rounded-2xl border border-slate-800 p-5 space-y-4 shadow-xl">
+          <PageLoaderManager
+            loaderConfig={loaderConfig}
+            onLoaderConfigChange={onUpdateLoaderConfig}
+            madrasah={madrasah}
+            onOpenPageLoaderSettings={onOpenPageLoaderSettings}
           />
         </div>
       )}
