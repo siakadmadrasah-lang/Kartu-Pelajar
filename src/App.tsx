@@ -6,7 +6,8 @@ import {
   StudentImportMode,
   AdminUser, 
   ActivityLog,
-  PageLoaderConfig 
+  PageLoaderConfig,
+  KopSuratConfig
 } from './types';
 import { 
   INITIAL_CARD_CONFIG, 
@@ -14,7 +15,8 @@ import {
   INITIAL_STUDENTS,
   DEFAULT_EMPTY_STUDENT,
   SAMPLE_STUDENT,
-  INITIAL_LOADER_CONFIG
+  INITIAL_LOADER_CONFIG,
+  INITIAL_KOP_SURAT_CONFIG
 } from './constants/initialData';
 import { Card3DPreview } from './components/Card3DPreview';
 import { StudentForm } from './components/StudentForm';
@@ -32,6 +34,7 @@ import { AdminDashboardView } from './components/AdminDashboardView';
 import { SignaturePadModal } from './components/SignaturePadModal';
 import { EmisExcelImportModal } from './components/EmisExcelImportModal';
 import { SuratKeteranganAktifModal } from './components/SuratKeteranganAktifModal';
+import { KopSuratManager } from './components/KopSuratManager';
 import { InitialPageLoader, ActionProcessingOverlay } from './components/PageLoader';
 import { PageLoaderSettingsModal } from './components/PageLoaderSettingsModal';
 import { KemenagLogo } from './components/Logos';
@@ -62,7 +65,8 @@ import {
   Printer,
   Database,
   History,
-  GraduationCap
+  GraduationCap,
+  X
 } from 'lucide-react';
 
 
@@ -268,6 +272,15 @@ export default function App() {
     return INITIAL_CARD_CONFIG;
   });
 
+  // Kop Surat Terpisah & Mandiri State
+  const [kopConfig, setKopConfig] = useState<KopSuratConfig>(() => {
+    const saved = typeof window !== 'undefined' ? localStorage.getItem('mi_kop_surat_config') : null;
+    if (saved) {
+      try { return JSON.parse(saved); } catch (e) { console.error(e); }
+    }
+    return INITIAL_KOP_SURAT_CONFIG;
+  });
+
   // Admin User & Auth State
   const [currentUser, setCurrentUser] = useState<AdminUser | null>(() => {
     const saved = localStorage.getItem('mi_admin_user');
@@ -358,6 +371,7 @@ export default function App() {
   const [isSignaturePadOpen, setIsSignaturePadOpen] = useState<boolean>(false);
   const [isEmisExcelModalOpen, setIsEmisExcelModalOpen] = useState<boolean>(false);
   const [isSuratAktifModalOpen, setIsSuratAktifModalOpen] = useState<boolean>(false);
+  const [isKopSuratModalOpen, setIsKopSuratModalOpen] = useState<boolean>(false);
   const [isPageLoaderSettingsOpen, setIsPageLoaderSettingsOpen] = useState<boolean>(false);
 
   // Overlay processing state for async operations
@@ -574,7 +588,19 @@ export default function App() {
             cardConfigRef.current = cachedConfig;
           }
 
-          // 4. Hydrate Loader Config & Logs
+          // 4. Hydrate Kop Surat Config from server
+          if (d.kopSuratConfig && typeof d.kopSuratConfig === 'object') {
+            const cleanKopConfig: KopSuratConfig = {
+              ...INITIAL_KOP_SURAT_CONFIG,
+              ...d.kopSuratConfig,
+            };
+            setKopConfig(cleanKopConfig);
+            try {
+              localStorage.setItem('mi_kop_surat_config', JSON.stringify(cleanKopConfig));
+            } catch (e) {}
+          }
+
+          // 5. Hydrate Loader Config & Logs
           if (d.loaderConfig) {
             setLoaderConfig(d.loaderConfig);
             setPersistentItem('mi_loader_config', d.loaderConfig).catch(() => {});
@@ -1550,6 +1576,37 @@ export default function App() {
     addLog('Kustomisasi Page Loader', `Memperbarui tema (${updated.theme}), logo (${updated.logoType}), dan durasi Splash Screen`, 'edit');
   };
 
+  const handleUpdateKopConfig = async (updated: KopSuratConfig) => {
+    markUserEdited();
+    setKopConfig(updated);
+    try {
+      localStorage.setItem('mi_kop_surat_config', JSON.stringify(updated));
+    } catch (e) {}
+    try {
+      if (typeof BroadcastChannel !== 'undefined') {
+        const bc = new BroadcastChannel('mi_realtime_channel');
+        bc.postMessage({ type: 'local_sync', payload: { kopSuratConfig: updated }, timestamp: Date.now() });
+        bc.close();
+      }
+    } catch (e) {}
+    setSyncStatus('saving');
+    try {
+      const res = await saveCentralServerData({ kopSuratConfig: updated });
+      if (res && res.lastUpdated) {
+        setLastServerUpdate(res.lastUpdated);
+        lastKnownServerTimeRef.current = res.lastUpdated;
+      }
+      setSyncStatus('synced');
+    } catch (e) {
+      setSyncStatus('synced');
+    }
+  };
+
+  const handleSaveKopConfig = (updated: KopSuratConfig) => {
+    handleUpdateKopConfig(updated);
+    addLog('Simpan Kop Surat', 'Konfigurasi Kop Surat resmi berhasil disimpan dan disinkronkan', 'edit');
+  };
+
   const handleAddNewStudent = () => {
     markUserEdited();
     const newStudent: Student = {
@@ -1834,6 +1891,9 @@ export default function App() {
             onOpenPageLoaderSettings={() => setIsPageLoaderSettingsOpen(true)}
             loaderConfig={loaderConfig}
             onUpdateLoaderConfig={handleUpdateLoaderConfig}
+            kopConfig={kopConfig}
+            onUpdateKopConfig={handleUpdateKopConfig}
+            onOpenKopSuratManager={() => setIsKopSuratModalOpen(true)}
             syncStatus={syncStatus}
             onManualSync={handleManualSync}
             onRefreshFromServer={handleForceRefresh}
@@ -2061,6 +2121,27 @@ export default function App() {
                       <div className="text-[10px] text-slate-400 font-normal">Format Resmi Kemenag A4/F4</div>
                     </div>
                   </button>
+
+                  <button
+                    onClick={() => {
+                      setIsKopSuratModalOpen(true);
+                      addLog('Modul Kop Surat', 'Membuka Modul Pengelolaan Kop Surat Mandiri', 'edit');
+                    }}
+                    className="p-3.5 bg-slate-800 hover:bg-slate-750 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-2.5 border border-slate-700 hover:border-emerald-500/50 transition active:scale-95 text-left sm:col-span-2"
+                  >
+                    <div className="p-2 bg-emerald-500/10 rounded-lg">
+                      <FileText className="w-5 h-5 text-emerald-400" />
+                    </div>
+                    <div>
+                      <div className="font-extrabold text-white text-xs flex items-center gap-2">
+                        <span>Modul Kop Surat Mandiri & Full Edit</span>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                          Baru
+                        </span>
+                      </div>
+                      <div className="text-[10px] text-slate-400 font-normal">Kelola 6 baris judul, logo kemenag/madrasah, garis resmi, dan ekspor Word</div>
+                    </div>
+                  </button>
                 </div>
               </div>
             </div>
@@ -2246,6 +2327,15 @@ export default function App() {
                 </button>
 
                 <button
+                  onClick={() => setIsKopSuratModalOpen(true)}
+                  className="p-1 sm:px-2 sm:py-1 rounded-lg bg-slate-900 hover:bg-emerald-950/60 text-slate-200 hover:text-emerald-300 font-medium text-[11px] flex items-center gap-1 border border-slate-800 hover:border-emerald-500/40 transition active:scale-95 whitespace-nowrap"
+                  title="Modul Kop Surat Mandiri & Full Edit"
+                >
+                  <FileText className="w-3 h-3 text-emerald-400" />
+                  <span className="hidden sm:inline">Kop Surat</span>
+                </button>
+
+                <button
                   onClick={() => setIsPageLoaderSettingsOpen(true)}
                   className="p-1 sm:px-2 sm:py-1 rounded-lg bg-slate-900 hover:bg-amber-950/60 text-slate-200 hover:text-amber-300 font-medium text-[11px] flex items-center gap-1 border border-slate-800 hover:border-amber-500/40 transition active:scale-95 whitespace-nowrap"
                   title="Kustomisasi Splash Page Loader"
@@ -2369,7 +2459,58 @@ export default function App() {
         currentStudent={currentStudent}
         onSelectStudent={(s) => setSelectedStudentId(s.id)}
         cardConfig={cardConfig}
+        kopSuratConfig={kopConfig}
+        onOpenKopManager={() => setIsKopSuratModalOpen(true)}
       />
+
+      {/* MODUL KOP SURAT MANDIRI & FULL EDIT MODAL */}
+      {isKopSuratModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 overflow-y-auto no-print animate-in fade-in duration-200">
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-6xl max-h-[95vh] flex flex-col shadow-2xl overflow-hidden">
+            {/* Modal Header */}
+            <div className="p-4 bg-slate-950 border-b border-slate-800 flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 bg-emerald-500/20 text-emerald-400 rounded-xl border border-emerald-500/30">
+                  <FileText className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
+                    <span>Modul Kop Surat Mandiri & Full Edit</span>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                      Terpisah
+                    </span>
+                  </h3>
+                  <p className="text-[11px] text-slate-400">
+                    Konfigurasi mandiri 6 baris teks, logo kiri/kanan, garis resmi Kemenag, dan ekspor dokumen.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsKopSuratModalOpen(false)}
+                className="p-2 text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-xl transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-3 sm:p-5 overflow-y-auto flex-1">
+              <KopSuratManager
+                kopConfig={kopConfig}
+                onChange={handleUpdateKopConfig}
+                madrasah={madrasah}
+                onSave={handleSaveKopConfig}
+                onResetToDefault={() => handleUpdateKopConfig(INITIAL_KOP_SURAT_CONFIG)}
+                onOpenSuratModal={() => {
+                  setIsKopSuratModalOpen(false);
+                  setIsSuratAktifModalOpen(true);
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* PAGE LOADER / SPLASH SCREEN CUSTOMIZATION MODAL */}
       <PageLoaderSettingsModal

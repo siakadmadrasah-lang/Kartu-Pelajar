@@ -55,6 +55,7 @@ interface MadrasahFormProps {
   onOpenPageLoaderSettings?: () => void;
   studentsCount?: number;
   onApplyTahunPelajaranToAllStudents?: (newTahunPelajaran: string) => void;
+  onOpenKopSuratManager?: () => void;
 }
 
 export const MadrasahForm: React.FC<MadrasahFormProps> = ({
@@ -70,6 +71,7 @@ export const MadrasahForm: React.FC<MadrasahFormProps> = ({
   onOpenPageLoaderSettings,
   studentsCount,
   onApplyTahunPelajaranToAllStudents,
+  onOpenKopSuratManager,
 }) => {
   const logoAppRef = useRef<HTMLInputElement>(null);
   const logoMadrasahRef = useRef<HTMLInputElement>(null);
@@ -233,6 +235,36 @@ export const MadrasahForm: React.FC<MadrasahFormProps> = ({
           )}
         </div>
       </div>
+
+      {/* Banner Modul Kop Surat Mandiri */}
+      {onOpenKopSuratManager && (
+        <div className="bg-gradient-to-r from-emerald-950/90 via-slate-900 to-slate-900 p-4 rounded-2xl border border-emerald-500/40 shadow-md flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-emerald-600/30 border border-emerald-500/40 flex items-center justify-center text-emerald-400">
+              <FileText className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-extrabold text-white">Modul Kop Surat Mandiri (Full Edit)</span>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                  Terpisah & Mandiri
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-400 mt-0.5">
+                Pengelolaan Kop Surat resmi kini terpisah: atur 6 baris teks, logo kiri & kanan, tipografi, garis pemisah resmi Kemenag, dan unduh format Word/Docs.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={onOpenKopSuratManager}
+            className="px-3.5 py-1.5 text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl shadow-md flex items-center gap-1.5 transition active:scale-95"
+          >
+            <FileText className="w-3.5 h-3.5" />
+            <span>Kelola Kop Surat Mandiri</span>
+          </button>
+        </div>
+      )}
 
       {/* Identitas Utama */}
       <div className="bg-slate-800/80 p-4 rounded-xl border border-slate-700/80 space-y-3 shadow-sm">

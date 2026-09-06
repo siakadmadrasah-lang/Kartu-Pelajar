@@ -184,4 +184,65 @@ export interface PageLoaderConfig {
   step3Text: string;
 }
 
+export type KopSuratLayoutPreset = 'dua-logo' | 'logo-kiri' | 'logo-kanan' | 'logo-tengah' | 'tanpa-logo';
+export type KopSuratFontFamily = 'serif' | 'sans' | 'amiri' | 'cinzel';
+export type KopSuratGarisStyle = 'ganda-resmi' | 'tunggal-tebal' | 'tunggal-tipis' | 'ganda-simetris' | 'warna-kemenag' | 'none';
+
+export interface KopSuratConfig {
+  // Baris Teks Utama
+  baris1Kementerian: string;
+  showBaris1: boolean;
+  isUppercaseBaris1: boolean;
+  fontSizeBaris1?: number; // pt or rem
+
+  baris2Wilayah: string;
+  showBaris2: boolean;
+  isUppercaseBaris2: boolean;
+  fontSizeBaris2?: number;
+
+  baris3Madrasah: string;
+  showBaris3: boolean;
+  isUppercaseBaris3: boolean;
+  fontSizeBaris3?: number;
+
+  baris4Legalitas: string; // e.g. "NSM: 111233020050 • NPSN: 60710255 • Terakreditasi A"
+  showBaris4: boolean;
+  fontSizeBaris4?: number;
+
+  baris5Alamat: string;
+  showBaris5: boolean;
+  fontSizeBaris5?: number;
+
+  baris6Kontak: string;
+  showBaris6: boolean;
+  fontSizeBaris6?: number;
+
+  // Tata Letak & Logo
+  layoutPreset: KopSuratLayoutPreset;
+  showLogoKiri: boolean;
+  logoKiriUrl?: string;
+  logoKiriSize: number; // in px, e.g. 75
+  showLogoKanan: boolean;
+  logoKananUrl?: string;
+  logoKananSize: number; // in px, e.g. 75
+
+  // Tipografi & Perataan
+  fontFamily: KopSuratFontFamily;
+  fontSizeScale: 'compact' | 'normal' | 'large';
+  textAlignment: 'center' | 'left';
+  lineSpacing: 'compact' | 'normal' | 'relaxed';
+  textColor: string;
+
+  // Garis Pemisah (Separator)
+  garisStyle: KopSuratGarisStyle;
+  garisColor: string;
+  garisThickness: number; // in px
+  garisSpacing: number; // in px between double lines or padding
+
+  // Jarak Padding / Margin
+  paddingTop: number;
+  paddingBottom: number;
+  paddingX: number;
+}
+
 

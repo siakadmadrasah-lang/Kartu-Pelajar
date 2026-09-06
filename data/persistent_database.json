@@ -2,8 +2,8 @@
   "madrasah": {
     "namaKementerian": "KEMENTERIAN AGAMA REPUBLIK INDONESIA",
     "namaMadrasah": "MI TESTING UPDATE 123",
-    "namaMadrasahKop": "MI MA'ARIF NU 2 SANGGREMAN",
-    "namaSatuanPendidikan": "MI MA'ARIF NU 2 SANGGREMAN",
+    "namaMadrasahKop": "",
+    "namaSatuanPendidikan": "",
     "nsm": "111233020084",
     "npsn": "60721868",
     "kemenagWilayah": "KANTOR KEMENTERIAN AGAMA KABUPATEN BANYUMAS",
@@ -97,6 +97,14 @@
   },
   "activityLogs": [
     {
+      "id": "log-1788655668732",
+      "action": "Admin Login",
+      "timestamp": "07.47",
+      "operator": "Operator",
+      "details": "Login berhasil sebagai JAENALMASKUN (superadmin)",
+      "type": "auth"
+    },
+    {
       "id": "log-1788350280801",
       "action": "Simpan Profil Madrasah & Kop",
       "timestamp": "18.58",
@@ -153,5 +161,5 @@
       "type": "security"
     }
   ],
-  "lastUpdated": "2026-09-06T00:14:45.152Z"
+  "lastUpdated": "2026-09-06T00:48:20.513Z"
 }

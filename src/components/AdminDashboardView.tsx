@@ -5,8 +5,10 @@ import {
   Student, 
   CardConfig, 
   ActivityLog,
-  PageLoaderConfig 
+  PageLoaderConfig,
+  KopSuratConfig
 } from '../types';
+import { INITIAL_KOP_SURAT_CONFIG } from '../constants/initialData';
 import { 
   Users, 
   Building2, 
@@ -45,6 +47,7 @@ import { exportStudentsToEmisExcel, downloadEmisExcelTemplate } from '../utils/e
 import { StudentForm } from './StudentForm';
 import { MadrasahForm } from './MadrasahForm';
 import { DesignSettings } from './DesignSettings';
+import { KopSuratManager } from './KopSuratManager';
 
 interface AdminDashboardViewProps {
   currentUser: AdminUser | null;
@@ -70,6 +73,9 @@ interface AdminDashboardViewProps {
   onUpdateLoaderConfig?: (updated: PageLoaderConfig) => void;
   onResetMadrasahToDefault?: () => void;
   onExplicitSaveMadrasah?: (updated: MadrasahInfo, updatedConfig?: CardConfig) => void;
+  kopConfig?: KopSuratConfig;
+  onUpdateKopConfig?: (updated: KopSuratConfig) => void;
+  onOpenKopSuratManager?: () => void;
   syncStatus?: 'synced' | 'saving' | 'syncing' | 'error';
   onManualSync?: () => void;
   onRefreshFromServer?: () => void;
@@ -100,12 +106,15 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
   onUpdateLoaderConfig,
   onResetMadrasahToDefault,
   onExplicitSaveMadrasah,
+  kopConfig,
+  onUpdateKopConfig,
+  onOpenKopSuratManager,
   syncStatus = 'synced',
   onManualSync,
   onRefreshFromServer,
   lastServerUpdate,
 }) => {
-  const [activeDashboardTab, setActiveDashboardTab] = useState<'students' | 'madrasah' | 'signature' | 'design' | 'logs'>('students');
+  const [activeDashboardTab, setActiveDashboardTab] = useState<'students' | 'madrasah' | 'kopsurat' | 'signature' | 'design' | 'logs'>('students');
   const [searchTerm, setSearchTerm] = useState('');
   const [classFilter, setClassFilter] = useState('ALL');
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
@@ -512,6 +521,18 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
         </button>
 
         <button
+          onClick={() => setActiveDashboardTab('kopsurat')}
+          className={`py-2 px-4 rounded-xl text-xs font-bold flex items-center gap-2 transition ${
+            activeDashboardTab === 'kopsurat'
+              ? 'bg-emerald-600 text-white shadow-sm'
+              : 'text-slate-400 hover:text-white hover:bg-slate-800'
+          }`}
+        >
+          <FileText className="w-4 h-4" />
+          <span>3. Modul Kop Surat (Mandiri)</span>
+        </button>
+
+        <button
           onClick={() => setActiveDashboardTab('signature')}
           className={`py-2 px-4 rounded-xl text-xs font-bold flex items-center gap-2 transition ${
             activeDashboardTab === 'signature'
@@ -520,7 +541,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
           }`}
         >
           <PenTool className="w-4 h-4" />
-          <span>3. Penandatanganan & Stempel</span>
+          <span>4. Penandatanganan & Stempel</span>
         </button>
 
         <button
@@ -532,7 +553,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
           }`}
         >
           <Palette className="w-4 h-4" />
-          <span>4. Desain & Format Kartu</span>
+          <span>5. Desain & Format Kartu</span>
         </button>
 
         <button
@@ -544,7 +565,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
           }`}
         >
           <History className="w-4 h-4" />
-          <span>5. Log Audit ({activityLogs.length})</span>
+          <span>6. Log Audit ({activityLogs.length})</span>
         </button>
       </div>
 
@@ -842,6 +863,41 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
             onOpenPageLoaderSettings={onOpenPageLoaderSettings}
             studentsCount={students.length}
             onApplyTahunPelajaranToAllStudents={handleApplyTahunPelajaranToAllStudents}
+            onOpenKopSuratManager={() => setActiveDashboardTab('kopsurat')}
+          />
+        </div>
+      )}
+
+      {/* TAB CONTENT: MODUL KOP SURAT TERPISAH & MANDIRI */}
+      {activeDashboardTab === 'kopsurat' && (
+        <div className="bg-slate-900/90 rounded-2xl border border-slate-800 p-5 space-y-4 shadow-xl">
+          <div className="pb-3 border-b border-slate-800 flex items-center justify-between flex-wrap gap-2">
+            <div>
+              <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                <FileText className="w-4 h-4 text-emerald-400" />
+                Modul Pengelolaan Kop Surat Mandiri & Full Edit
+              </h3>
+              <p className="text-xs text-slate-400">
+                Kelola kop surat resmi secara terpisah dan mandiri: 6 baris teks, logo kemenag/madrasah, garis pembatas resmi Kemenag, dan unduh format Word/Docs.
+              </p>
+            </div>
+            {onOpenSuratAktif && (
+              <button
+                type="button"
+                onClick={() => onOpenSuratAktif()}
+                className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition active:scale-95"
+              >
+                <Eye className="w-3.5 h-3.5 text-amber-400" />
+                <span>Buka Pratinjau Surat Aktif</span>
+              </button>
+            )}
+          </div>
+
+          <KopSuratManager
+            kopConfig={kopConfig || INITIAL_KOP_SURAT_CONFIG}
+            onChange={onUpdateKopConfig || (() => {})}
+            madrasah={madrasah}
+            onOpenSuratModal={onOpenSuratAktif ? () => onOpenSuratAktif() : undefined}
           />
         </div>
       )}

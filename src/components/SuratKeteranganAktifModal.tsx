@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { CardConfig, MadrasahInfo, Student, SuratKeteranganAktifConfig } from '../types';
+import { CardConfig, MadrasahInfo, Student, SuratKeteranganAktifConfig, KopSuratConfig } from '../types';
 import { KemenagLogo, MadrasahLogo, OfficialStamp, PrincipalSignature } from './Logos';
 import { generateQrDataUrl } from '../utils/exportUtils';
 import { toPng } from 'html-to-image';
@@ -18,7 +18,9 @@ import {
   ShieldCheck, 
   Search,
   CheckCircle2,
-  ArrowLeft
+  ArrowLeft,
+  Settings2,
+  ExternalLink
 } from 'lucide-react';
 
 interface SuratKeteranganAktifModalProps {
@@ -29,6 +31,8 @@ interface SuratKeteranganAktifModalProps {
   currentStudent: Student;
   onSelectStudent: (student: Student) => void;
   cardConfig?: CardConfig;
+  kopSuratConfig?: KopSuratConfig;
+  onOpenKopManager?: () => void;
 }
 
 const PRESET_KEPERLUAN = [
@@ -74,6 +78,8 @@ export const SuratKeteranganAktifModal: React.FC<SuratKeteranganAktifModalProps>
   currentStudent,
   onSelectStudent,
   cardConfig,
+  kopSuratConfig,
+  onOpenKopManager,
 }) => {
   const printContainerRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState(false);
@@ -320,6 +326,21 @@ NIP. ${madrasah.nipKepalaMadrasah || '197605122005012001'}
 
           {/* Action Header Buttons */}
           <div className="flex items-center gap-1 sm:gap-1.5 flex-shrink-0">
+            {onOpenKopManager && (
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  onOpenKopManager();
+                }}
+                className="px-2 sm:px-2.5 py-1.5 bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 border border-emerald-500/50 rounded-lg text-xs font-semibold flex items-center gap-1 transition active:scale-95"
+                title="Buka Modul Pengelola Kop Surat Mandiri"
+              >
+                <Settings2 className="w-3.5 h-3.5 text-emerald-400" />
+                <span className="hidden lg:inline">Edit Kop Mandiri</span>
+              </button>
+            )}
+
             <button
               type="button"
               onClick={handleCopyText}
@@ -664,12 +685,24 @@ NIP. ${madrasah.nipKepalaMadrasah || '197605122005012001'}
             >
               {/* KOP SURAT RESMI */}
               {config.tampilkanKop && (
-                <div className="border-b-[2.5px] border-black pb-1.5 mb-3.5">
+                <div 
+                  className="pb-1.5 mb-3.5"
+                  style={{
+                    fontFamily: kopSuratConfig?.fontFamily === 'serif' ? '"Times New Roman", Times, serif' : kopSuratConfig?.fontFamily === 'amiri' ? 'Amiri, serif' : kopSuratConfig?.fontFamily === 'cinzel' ? 'Cinzel, serif' : 'inherit'
+                  }}
+                >
                   <div className="flex items-center justify-between gap-3">
                     {/* Logo Kemenag RI (Kiri) */}
                     {config.tampilkanLogoKemenag ? (
                       <div className="w-20 h-20 sm:w-22 sm:h-22 flex items-center justify-center flex-shrink-0">
-                        {cardConfig?.singleLogoSource === 'madrasah' && !config.tampilkanLogoMadrasah ? (
+                        {kopSuratConfig?.logoKiriUrl ? (
+                          <img
+                            src={kopSuratConfig.logoKiriUrl}
+                            alt="Logo Kiri Kop"
+                            className="w-20 h-20 sm:w-22 sm:h-22 object-contain"
+                            crossOrigin={kopSuratConfig.logoKiriUrl.startsWith('data:') ? undefined : 'anonymous'}
+                          />
+                        ) : cardConfig?.singleLogoSource === 'madrasah' && !config.tampilkanLogoMadrasah ? (
                           madrasah.logoMadrasahUrl ? (
                             <img
                               src={madrasah.logoMadrasahUrl}
@@ -694,43 +727,68 @@ NIP. ${madrasah.nipKepalaMadrasah || '197605122005012001'}
                     )}
 
                     {/* Teks Kop Tengah */}
-                    <div className="flex-1 text-center font-serif text-black">
-                      {config.tampilkanNamaKementerian && (
-                        <h4 className="text-[12px] sm:text-[13px] font-bold uppercase tracking-wider leading-tight">
-                          {madrasah.namaKementerian || 'KEMENTERIAN AGAMA REPUBLIK INDONESIA'}
+                    <div className={`flex-1 ${kopSuratConfig?.textAlignment === 'left' ? 'text-left' : 'text-center'} font-serif text-black`}>
+                      {(kopSuratConfig ? kopSuratConfig.showBaris1 && kopSuratConfig.baris1Kementerian : config.tampilkanNamaKementerian) && (
+                        <h4 className={`text-[12px] sm:text-[13px] font-bold ${kopSuratConfig?.isUppercaseBaris1 !== false ? 'uppercase' : ''} tracking-wider leading-tight`}>
+                          {kopSuratConfig?.baris1Kementerian || madrasah.namaKementerian || 'KEMENTERIAN AGAMA REPUBLIK INDONESIA'}
                         </h4>
                       )}
-                      <h3 className="text-[13px] sm:text-[14px] font-bold uppercase tracking-wider leading-tight mt-0.5">
-                        {madrasah.kemenagWilayah || `KANTOR KEMENTERIAN AGAMA ${madrasah.kotaKab?.toUpperCase() || 'KABUPATEN BANYUMAS'}`}
-                      </h3>
-                      <h2 className="text-[15.5px] sm:text-[16.5px] font-extrabold uppercase tracking-wide leading-tight mt-0.5 text-black">
-                        {madrasah.namaMadrasahKop || madrasah.namaMadrasah}
-                      </h2>
-                      <div className="text-[10.5px] font-normal leading-tight mt-0.5 text-neutral-800">
-                        <span>NSM: {madrasah.nsm}</span>
-                        <span className="mx-1.5">•</span>
-                        <span>NPSN: {madrasah.npsn}</span>
-                        {madrasah.akreditasi && madrasah.akreditasi !== '-' && (
-                          <>
-                            <span className="mx-1.5">•</span>
-                            <span>Akreditasi: {madrasah.akreditasi}</span>
-                          </>
-                        )}
-                      </div>
-                      <div className="text-[9.5px] font-normal leading-tight text-neutral-700 mt-0.5">
-                        {madrasah.alamat}, Kec. {madrasah.kecamatan}, {madrasah.kotaKab}, {madrasah.provinsi} {madrasah.kodePos}
-                      </div>
-                      <div className="text-[9px] font-normal text-neutral-700">
-                        {madrasah.telepon && `Telp: ${madrasah.telepon}`}
-                        {madrasah.email && ` | Email: ${madrasah.email}`}
-                        {madrasah.website && ` | Website: ${madrasah.website}`}
-                      </div>
+                      {(kopSuratConfig ? kopSuratConfig.showBaris2 && kopSuratConfig.baris2Wilayah : true) && (
+                        <h3 className={`text-[13px] sm:text-[14px] font-bold ${kopSuratConfig?.isUppercaseBaris2 !== false ? 'uppercase' : ''} tracking-wider leading-tight mt-0.5`}>
+                          {kopSuratConfig?.baris2Wilayah || madrasah.kemenagWilayah || `KANTOR KEMENTERIAN AGAMA ${madrasah.kotaKab?.toUpperCase() || 'KABUPATEN BANYUMAS'}`}
+                        </h3>
+                      )}
+                      {(kopSuratConfig ? kopSuratConfig.showBaris3 && kopSuratConfig.baris3Madrasah : true) && (
+                        <h2 className={`text-[15.5px] sm:text-[16.5px] font-extrabold ${kopSuratConfig?.isUppercaseBaris3 !== false ? 'uppercase' : ''} tracking-wide leading-tight mt-0.5 text-black`}>
+                          {kopSuratConfig?.baris3Madrasah || madrasah.namaMadrasahKop || madrasah.namaMadrasah}
+                        </h2>
+                      )}
+                      {(kopSuratConfig ? kopSuratConfig.showBaris4 && kopSuratConfig.baris4Legalitas : true) && (
+                        <div className="text-[10.5px] font-normal leading-tight mt-0.5 text-neutral-800">
+                          {kopSuratConfig?.baris4Legalitas || (
+                            <>
+                              <span>NSM: {madrasah.nsm}</span>
+                              <span className="mx-1.5">•</span>
+                              <span>NPSN: {madrasah.npsn}</span>
+                              {madrasah.akreditasi && madrasah.akreditasi !== '-' && (
+                                <>
+                                  <span className="mx-1.5">•</span>
+                                  <span>Akreditasi: {madrasah.akreditasi}</span>
+                                </>
+                              )}
+                            </>
+                          )}
+                        </div>
+                      )}
+                      {(kopSuratConfig ? kopSuratConfig.showBaris5 && kopSuratConfig.baris5Alamat : true) && (
+                        <div className="text-[9.5px] font-normal leading-tight text-neutral-700 mt-0.5">
+                          {kopSuratConfig?.baris5Alamat || `${madrasah.alamat}, Kec. ${madrasah.kecamatan}, ${madrasah.kotaKab}, ${madrasah.provinsi} ${madrasah.kodePos}`}
+                        </div>
+                      )}
+                      {(kopSuratConfig ? kopSuratConfig.showBaris6 && kopSuratConfig.baris6Kontak : true) && (
+                        <div className="text-[9px] font-normal text-neutral-700">
+                          {kopSuratConfig?.baris6Kontak || (
+                            <>
+                              {madrasah.telepon && `Telp: ${madrasah.telepon}`}
+                              {madrasah.email && ` | Email: ${madrasah.email}`}
+                              {madrasah.website && ` | Website: ${madrasah.website}`}
+                            </>
+                          )}
+                        </div>
+                      )}
                     </div>
 
                     {/* Logo Madrasah (Kanan) */}
                     {config.tampilkanLogoMadrasah ? (
                       <div className="w-20 h-20 sm:w-22 sm:h-22 flex items-center justify-center flex-shrink-0">
-                        {cardConfig?.singleLogoSource === 'kemenag' && !config.tampilkanLogoKemenag ? (
+                        {kopSuratConfig?.logoKananUrl ? (
+                          <img
+                            src={kopSuratConfig.logoKananUrl}
+                            alt="Logo Kanan Kop"
+                            className="w-20 h-20 sm:w-22 sm:h-22 object-contain"
+                            crossOrigin={kopSuratConfig.logoKananUrl.startsWith('data:') ? undefined : 'anonymous'}
+                          />
+                        ) : cardConfig?.singleLogoSource === 'kemenag' && !config.tampilkanLogoKemenag ? (
                           madrasah.logoKemenagUrl ? (
                             <img
                               src={madrasah.logoKemenagUrl}
@@ -755,8 +813,22 @@ NIP. ${madrasah.nipKepalaMadrasah || '197605122005012001'}
                     )}
                   </div>
 
-                  {/* Garis Ganda Tipis Bawah Kop */}
-                  <div className="border-b border-black mt-0.5"></div>
+                  {/* Garis Pembatas Kop Surat */}
+                  {kopSuratConfig?.garisStyle === 'none' ? null : kopSuratConfig?.garisStyle === 'tunggal-tebal' ? (
+                    <div className="mt-2 w-full" style={{ height: '2.5px', backgroundColor: kopSuratConfig.garisColor || '#000' }}></div>
+                  ) : kopSuratConfig?.garisStyle === 'tunggal-tipis' ? (
+                    <div className="mt-2 w-full" style={{ height: '1px', backgroundColor: kopSuratConfig.garisColor || '#000' }}></div>
+                  ) : kopSuratConfig?.garisStyle === 'warna-kemenag' ? (
+                    <div className="mt-2 w-full space-y-[1.5px]">
+                      <div style={{ height: '2.5px', backgroundColor: '#047857' }}></div>
+                      <div style={{ height: '1px', backgroundColor: '#d97706' }}></div>
+                    </div>
+                  ) : (
+                    <div className="mt-2 w-full space-y-[1.5px]">
+                      <div style={{ height: '2.5px', backgroundColor: kopSuratConfig?.garisColor || '#000000' }}></div>
+                      <div style={{ height: '1px', backgroundColor: kopSuratConfig?.garisColor || '#000000' }}></div>
+                    </div>
+                  )}
                 </div>
               )}
 
