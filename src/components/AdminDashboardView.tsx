@@ -863,7 +863,6 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
             onOpenPageLoaderSettings={onOpenPageLoaderSettings}
             studentsCount={students.length}
             onApplyTahunPelajaranToAllStudents={handleApplyTahunPelajaranToAllStudents}
-            onOpenKopSuratManager={() => setActiveDashboardTab('kopsurat')}
           />
         </div>
       )}

@@ -55,7 +55,6 @@ interface MadrasahFormProps {
   onOpenPageLoaderSettings?: () => void;
   studentsCount?: number;
   onApplyTahunPelajaranToAllStudents?: (newTahunPelajaran: string) => void;
-  onOpenKopSuratManager?: () => void;
 }
 
 export const MadrasahForm: React.FC<MadrasahFormProps> = ({
@@ -71,7 +70,6 @@ export const MadrasahForm: React.FC<MadrasahFormProps> = ({
   onOpenPageLoaderSettings,
   studentsCount,
   onApplyTahunPelajaranToAllStudents,
-  onOpenKopSuratManager,
 }) => {
   const logoAppRef = useRef<HTMLInputElement>(null);
   const logoMadrasahRef = useRef<HTMLInputElement>(null);
@@ -236,36 +234,6 @@ export const MadrasahForm: React.FC<MadrasahFormProps> = ({
         </div>
       </div>
 
-      {/* Banner Modul Kop Surat Mandiri */}
-      {onOpenKopSuratManager && (
-        <div className="bg-gradient-to-r from-emerald-950/90 via-slate-900 to-slate-900 p-4 rounded-2xl border border-emerald-500/40 shadow-md flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-600/30 border border-emerald-500/40 flex items-center justify-center text-emerald-400">
-              <FileText className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-extrabold text-white">Modul Kop Surat Mandiri (Full Edit)</span>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                  Terpisah & Mandiri
-                </span>
-              </div>
-              <p className="text-[11px] text-slate-400 mt-0.5">
-                Pengelolaan Kop Surat resmi kini terpisah: atur 6 baris teks, logo kiri & kanan, tipografi, garis pemisah resmi Kemenag, dan unduh format Word/Docs.
-              </p>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={onOpenKopSuratManager}
-            className="px-3.5 py-1.5 text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl shadow-md flex items-center gap-1.5 transition active:scale-95"
-          >
-            <FileText className="w-3.5 h-3.5" />
-            <span>Kelola Kop Surat Mandiri</span>
-          </button>
-        </div>
-      )}
-
       {/* Identitas Utama */}
       <div className="bg-slate-800/80 p-4 rounded-xl border border-slate-700/80 space-y-3 shadow-sm">
         <h4 className="text-xs font-bold text-amber-300 uppercase tracking-wider flex items-center justify-between">
@@ -280,12 +248,12 @@ export const MadrasahForm: React.FC<MadrasahFormProps> = ({
               <div>
                 <label className="block text-xs font-bold text-amber-300 flex items-center gap-1.5">
                   <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
-                  Nama Kementerian / Instansi Induk (Baris 1 Kop Kartu & Surat) *
+                  Nama Kementerian / Instansi Induk (Baris 1 Kop Kartu Pelajar) *
                 </label>
-                <span className="text-[10px] text-slate-400">Header Tingkat Pusat / Yayasan</span>
+                <span className="text-[10px] text-slate-400">Header Tingkat Pusat / Yayasan pada Kartu Pelajar</span>
               </div>
 
-              {/* Status & Toggle On/Off Nama Kementerian di Kartu & Surat */}
+              {/* Status & Toggle On/Off Nama Kementerian di Kartu */}
               {config && onConfigChange && (
                 <div className="flex flex-wrap items-center gap-2">
                   {/* Toggle untuk Kop Kartu */}
@@ -301,23 +269,7 @@ export const MadrasahForm: React.FC<MadrasahFormProps> = ({
                   >
                     <CreditCard className="w-3 h-3 text-emerald-400" />
                     <span className={`w-1.5 h-1.5 rounded-full ${(config.showNamaKementerian ?? true) ? 'bg-emerald-400' : 'bg-slate-500'}`} />
-                    <span>{(config.showNamaKementerian ?? true) ? 'Kartu: Aktif' : 'Kartu: Nonaktif'}</span>
-                  </button>
-
-                  {/* Toggle untuk Kop Surat */}
-                  <button
-                    type="button"
-                    onClick={() => onConfigChange({ ...config, showNamaKementerianSurat: !(config.showNamaKementerianSurat ?? true) })}
-                    className={`text-[10px] font-bold px-2.5 py-1 rounded-lg border transition flex items-center gap-1.5 shadow-sm ${
-                      (config.showNamaKementerianSurat ?? true)
-                        ? 'bg-amber-500/20 text-amber-300 border-amber-500/50 hover:bg-amber-500/30'
-                        : 'bg-slate-800/80 text-slate-400 border-slate-700 hover:bg-slate-700'
-                    }`}
-                    title="Klik untuk aktifkan / nonaktifkan nama kementerian pada kop surat keterangan aktif"
-                  >
-                    <FileText className="w-3 h-3 text-amber-400" />
-                    <span className={`w-1.5 h-1.5 rounded-full ${(config.showNamaKementerianSurat ?? true) ? 'bg-amber-400' : 'bg-slate-500'}`} />
-                    <span>{(config.showNamaKementerianSurat ?? true) ? 'Surat: Aktif' : 'Surat: Nonaktif'}</span>
+                    <span>{(config.showNamaKementerian ?? true) ? 'Kop Kartu: Aktif' : 'Kop Kartu: Nonaktif'}</span>
                   </button>
                 </div>
               )}
@@ -383,22 +335,22 @@ export const MadrasahForm: React.FC<MadrasahFormProps> = ({
             </p>
           </div>
 
-          {/* 2. SEKSI TERPISAH: NAMA KOP MADRASAH */}
+          {/* 2. SEKSI TERPISAH: NAMA KOP KARTU PELAJAR */}
           <div className="md:col-span-2 space-y-2.5 p-4 bg-gradient-to-br from-amber-950/30 via-slate-950/80 to-slate-950/90 rounded-xl border border-amber-500/40 shadow-sm">
             <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-amber-500/20">
               <div className="flex items-center gap-2">
                 <div className="p-1.5 bg-amber-500/10 rounded-lg border border-amber-500/30 text-amber-400">
-                  <FileText className="w-4 h-4" />
+                  <CreditCard className="w-4 h-4" />
                 </div>
                 <div>
                   <h4 className="text-xs font-bold text-amber-300 flex items-center gap-2">
-                    <span>📌 NAMA KOP MADRASAH (Header Kartu & Surat Resmi)</span>
+                    <span>📌 NAMA KOP KARTU PELAJAR (Header Kartu Depan & Belakang)</span>
                     <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-400/20 text-amber-200 border border-amber-400/30">
-                      Khusus KOP
+                      Khusus Kartu
                     </span>
                   </h4>
                   <p className="text-[10.5px] text-amber-200/70">
-                    Digunakan khusus untuk baris judul KOP Kartu Pelajar (Depan & Belakang) serta KOP Surat Resmi.
+                    Digunakan khusus untuk baris judul KOP Kartu Pelajar (Depan & Belakang).
                   </p>
                 </div>
               </div>
