@@ -29,7 +29,6 @@ import {
   ShieldCheck,
   School,
   Calendar,
-  GraduationCap,
   Check,
   X
 } from 'lucide-react';
@@ -85,6 +84,7 @@ export const MadrasahForm: React.FC<MadrasahFormProps> = ({
     const updated = {
       ...madrasah,
       [field]: value,
+      ...(field === 'namaMadrasah' ? { namaSatuanPendidikan: value } : {}),
     };
     onChange(updated);
   };
@@ -311,7 +311,7 @@ export const MadrasahForm: React.FC<MadrasahFormProps> = ({
             </div>
           </div>
 
-          {/* 1. NAMA MADRASAH UTAMA (MASTER) */}
+          {/* 1. NAMA MADRASAH UTAMA (MASTER & SATUAN PENDIDIKAN) */}
           <div className="md:col-span-2 space-y-2 p-3.5 bg-slate-950/80 rounded-xl border border-slate-700/80 shadow-sm">
             <div className="flex items-center justify-between mb-1">
               <label className="block text-xs font-semibold text-slate-200 flex items-center gap-1.5">
@@ -321,7 +321,7 @@ export const MadrasahForm: React.FC<MadrasahFormProps> = ({
                   Master Lembaga
                 </span>
               </label>
-              <span className="text-[11px] text-slate-400 font-normal">Rujukan nama dasar lembaga</span>
+              <span className="text-[11px] text-emerald-400/90 font-medium">Otomatis menjadi Satuan Pendidikan</span>
             </div>
             <input
               type="text"
@@ -331,70 +331,8 @@ export const MadrasahForm: React.FC<MadrasahFormProps> = ({
               className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white font-bold focus:outline-none focus:border-emerald-500 shadow-inner"
             />
             <p className="text-[11px] text-slate-400 leading-relaxed">
-              Nama resmi lembaga madrasah/sekolah Anda yang menjadi identitas global sistem dan arsip database.
+              Nama resmi lembaga madrasah/sekolah Anda yang menjadi identitas global sistem, arsip database, serta otomatis digunakan sebagai nama satuan pendidikan pada kartu pelajar, cap stempel, dan surat keterangan aktif.
             </p>
-          </div>
-
-          {/* 2. SEKSI TERPISAH: NAMA SATUAN PENDIDIKAN */}
-          <div className="md:col-span-2 space-y-2.5 p-4 bg-gradient-to-br from-emerald-950/30 via-slate-950/80 to-slate-950/90 rounded-xl border border-emerald-500/40 shadow-sm">
-            <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-emerald-500/20">
-              <div className="flex items-center gap-2">
-                <div className="p-1.5 bg-emerald-500/10 rounded-lg border border-emerald-500/30 text-emerald-400">
-                  <GraduationCap className="w-4 h-4" />
-                </div>
-                <div>
-                  <h4 className="text-xs font-bold text-emerald-300 flex items-center gap-2">
-                    <span>🏫 NAMA SATUAN PENDIDIKAN (Identitas Siswa & Legalisasi)</span>
-                    <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-400/20 text-emerald-200 border border-emerald-400/30">
-                      Khusus Siswa & EMIS
-                    </span>
-                  </h4>
-                  <p className="text-[10.5px] text-emerald-200/70">
-                    Digunakan khusus pada kolom identitas sekolah siswa, surat keterangan aktif, dan cap stempel resmi.
-                  </p>
-                </div>
-              </div>
-              {madrasah.namaMadrasah && (
-                <div className="flex items-center gap-1.5">
-                  <button
-                    type="button"
-                    onClick={() => handleFieldChange('namaSatuanPendidikan', madrasah.namaMadrasah)}
-                    className="px-2.5 py-1 text-[11px] font-medium bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-400/40 rounded-md transition flex items-center gap-1"
-                    title="Samakan dengan Nama Madrasah Utama"
-                  >
-                    <span>Samakan dgn Nama Utama</span>
-                  </button>
-                  {madrasah.namaSatuanPendidikan && (
-                    <button
-                      type="button"
-                      onClick={() => handleFieldChange('namaSatuanPendidikan', '')}
-                      className="px-2 py-1 text-[10px] text-slate-400 hover:text-rose-300 transition"
-                      title="Kosongkan agar memakai nama utama secara otomatis"
-                    >
-                      Reset
-                    </button>
-                  )}
-                </div>
-              )}
-            </div>
-
-            <div className="space-y-1.5 pt-1">
-              <input
-                type="text"
-                value={madrasah.namaSatuanPendidikan ?? ''}
-                onChange={(e) => handleFieldChange('namaSatuanPendidikan', e.target.value)}
-                placeholder={madrasah.namaMadrasah || "Contoh: MI MA'ARIF NU 2 SANGGREMAN"}
-                className="w-full bg-slate-900 border border-emerald-400/60 rounded-lg px-3 py-2.5 text-sm text-emerald-100 font-bold focus:outline-none focus:border-emerald-300 focus:ring-1 focus:ring-emerald-400 shadow-inner"
-              />
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-[11px] text-slate-400">
-                <span className="text-emerald-200/80">
-                  💡 <strong>Kepentingan Satuan Pendidikan:</strong> Format nama lembaga siswa sesuai izin operasional / EMIS (misal: <em>MI MA'ARIF NU 2 SANGGREMAN</em>).
-                </span>
-                <span className="text-[10px] font-mono text-emerald-400/80">
-                  Pratinjau Siswa: Satuan Pendidikan: {madrasah.namaSatuanPendidikan || madrasah.namaMadrasah || '-'}
-                </span>
-              </div>
-            </div>
           </div>
 
           {/* TAHUN PELAJARAN AKTIF (BERLAKU GLOBAL) */}
