@@ -772,7 +772,7 @@ NIP. ${madrasah.nipKepalaMadrasah || '197605122005012001'}
 
               {/* PARAGRAF PEMBUKA */}
               <div className="text-[11.5px] leading-relaxed text-justify mb-2">
-                Yang bertanda tangan di bawah ini Kepala Madrasah Ibtidaiyah <strong>{madrasah.namaMadrasah}</strong>, menerangkan bahwa:
+                Yang bertanda tangan di bawah ini {madrasah.jabatanPenandatangan || 'Kepala Madrasah'} <strong>{madrasah.namaSatuanPendidikan || madrasah.namaMadrasah}</strong>, menerangkan bahwa:
               </div>
 
               {/* DATA PEJABAT */}
@@ -924,7 +924,7 @@ NIP. ${madrasah.nipKepalaMadrasah || '197605122005012001'}
                           />
                         ) : (
                           <OfficialStamp
-                            schoolName={madrasah.namaMadrasah}
+                            schoolName={madrasah.namaSatuanPendidikan || madrasah.namaMadrasah}
                             location={config.kotaSurat}
                             className="w-24 h-24"
                           />

@@ -29,6 +29,7 @@ import {
   ShieldCheck,
   School,
   Calendar,
+  GraduationCap,
   Check,
   X
 } from 'lucide-react';
@@ -85,11 +86,6 @@ export const MadrasahForm: React.FC<MadrasahFormProps> = ({
       ...madrasah,
       [field]: value,
     };
-    if (field === 'namaMadrasah') {
-      if (!updated.subJudulHeaderAplikasi || updated.subJudulHeaderAplikasi === "MI MA'ARIF NU 2 SANGGREMAN" || updated.subJudulHeaderAplikasi === madrasah.namaMadrasah) {
-        updated.subJudulHeaderAplikasi = value;
-      }
-    }
     onChange(updated);
   };
 
@@ -297,7 +293,7 @@ export const MadrasahForm: React.FC<MadrasahFormProps> = ({
             <input
               type="text"
               value={madrasah.namaKementerian ?? ''}
-              onChange={(e) => handleFieldChange('namaKementerian', e.target.value.toUpperCase())}
+              onChange={(e) => handleFieldChange('namaKementerian', e.target.value)}
               placeholder="KEMENTERIAN AGAMA REPUBLIK INDONESIA"
               className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-amber-200 font-bold focus:outline-none focus:border-amber-400 tracking-wide"
             />
@@ -331,57 +327,150 @@ export const MadrasahForm: React.FC<MadrasahFormProps> = ({
             </div>
           </div>
 
-          <div className="md:col-span-2 space-y-3 p-3.5 bg-slate-950/80 rounded-xl border border-emerald-500/40">
-            <div>
-              <label className="block text-xs font-semibold text-slate-200 mb-1 flex items-center justify-between">
-                <span>Nama Madrasah / Sekolah (Utama) *</span>
-                <span className="text-[11px] text-amber-400 font-normal">Nama dasar lembaga</span>
+          {/* 1. NAMA MADRASAH UTAMA (MASTER) */}
+          <div className="md:col-span-2 space-y-2 p-3.5 bg-slate-950/80 rounded-xl border border-slate-700/80 shadow-sm">
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-xs font-semibold text-slate-200 flex items-center gap-1.5">
+                <School className="w-4 h-4 text-emerald-400" />
+                <span>Nama Madrasah / Sekolah (Nama Utama Lembaga) *</span>
+                <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-800 text-slate-300 border border-slate-700">
+                  Master Lembaga
+                </span>
               </label>
-              <input
-                type="text"
-                value={madrasah.namaMadrasah}
-                onChange={(e) => {
-                  const val = e.target.value.toUpperCase();
-                  onChange({
-                    ...madrasah,
-                    namaMadrasah: val,
-                    namaMadrasahKop: (!madrasah.namaMadrasahKop || madrasah.namaMadrasahKop === madrasah.namaMadrasah) ? val : madrasah.namaMadrasahKop,
-                    namaSatuanPendidikan: (!madrasah.namaSatuanPendidikan || madrasah.namaSatuanPendidikan === madrasah.namaMadrasah) ? val : madrasah.namaSatuanPendidikan,
-                  });
-                }}
-                placeholder="MI MA'ARIF NU 2 SANGGREMAN"
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white font-bold focus:outline-none focus:border-emerald-500"
-              />
+              <span className="text-[11px] text-slate-400 font-normal">Rujukan nama dasar lembaga</span>
+            </div>
+            <input
+              type="text"
+              value={madrasah.namaMadrasah || ''}
+              onChange={(e) => handleFieldChange('namaMadrasah', e.target.value)}
+              placeholder="Contoh: MI MA'ARIF NU 2 SANGGREMAN"
+              className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white font-bold focus:outline-none focus:border-emerald-500 shadow-inner"
+            />
+            <p className="text-[11px] text-slate-400 leading-relaxed">
+              Nama resmi lembaga madrasah/sekolah Anda yang menjadi identitas global sistem dan arsip database.
+            </p>
+          </div>
+
+          {/* 2. SEKSI TERPISAH: NAMA KOP MADRASAH */}
+          <div className="md:col-span-2 space-y-2.5 p-4 bg-gradient-to-br from-amber-950/30 via-slate-950/80 to-slate-950/90 rounded-xl border border-amber-500/40 shadow-sm">
+            <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-amber-500/20">
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 bg-amber-500/10 rounded-lg border border-amber-500/30 text-amber-400">
+                  <FileText className="w-4 h-4" />
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-amber-300 flex items-center gap-2">
+                    <span>📌 NAMA KOP MADRASAH (Header Kartu & Surat Resmi)</span>
+                    <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-400/20 text-amber-200 border border-amber-400/30">
+                      Khusus KOP
+                    </span>
+                  </h4>
+                  <p className="text-[10.5px] text-amber-200/70">
+                    Digunakan khusus untuk baris judul KOP Kartu Pelajar (Depan & Belakang) serta KOP Surat Resmi.
+                  </p>
+                </div>
+              </div>
+              {madrasah.namaMadrasah && (
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => handleFieldChange('namaMadrasahKop', madrasah.namaMadrasah)}
+                    className="px-2.5 py-1 text-[11px] font-medium bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-400/40 rounded-md transition flex items-center gap-1"
+                    title="Samakan dengan Nama Madrasah Utama"
+                  >
+                    <span>Samakan dgn Nama Utama</span>
+                  </button>
+                  {madrasah.namaMadrasahKop && (
+                    <button
+                      type="button"
+                      onClick={() => handleFieldChange('namaMadrasahKop', '')}
+                      className="px-2 py-1 text-[10px] text-slate-400 hover:text-rose-300 transition"
+                      title="Kosongkan agar memakai nama utama secara otomatis"
+                    >
+                      Reset
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
 
-            {/* Pembedaan Nama Kop vs Satuan Pendidikan */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2 border-t border-slate-800">
-              <div className="space-y-1">
-                <label className="block text-xs font-bold text-amber-300 flex items-center gap-1.5">
-                  <span>📌 Nama Madrasah di KOP (Kartu & Surat)</span>
-                </label>
-                <input
-                  type="text"
-                  value={madrasah.namaMadrasahKop ?? madrasah.namaMadrasah}
-                  onChange={(e) => handleFieldChange('namaMadrasahKop', e.target.value.toUpperCase())}
-                  placeholder="e.g. MI MA'ARIF NU 2 SANGGREMAN"
-                  className="w-full bg-slate-900 border border-amber-400/50 rounded-lg px-3 py-2 text-xs text-white font-bold focus:outline-none focus:border-amber-400"
-                />
-                <p className="text-[10px] text-slate-400">Tampil sebagai baris judul pada KOP atas kartu pelajar dan kop surat.</p>
+            <div className="space-y-1.5 pt-1">
+              <input
+                type="text"
+                value={madrasah.namaMadrasahKop ?? ''}
+                onChange={(e) => handleFieldChange('namaMadrasahKop', e.target.value)}
+                placeholder={madrasah.namaMadrasah || "Contoh: YAYASAN MA'ARIF NU - MI MA'ARIF NU 2 SANGGREMAN"}
+                className="w-full bg-slate-900 border border-amber-400/60 rounded-lg px-3 py-2.5 text-sm text-amber-100 font-bold focus:outline-none focus:border-amber-300 focus:ring-1 focus:ring-amber-400 shadow-inner"
+              />
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-[11px] text-slate-400">
+                <span className="text-amber-200/80">
+                  💡 <strong>Kepentingan KOP:</strong> Bebas ditulis lengkap dengan nama yayasan, cabang, atau singkatan resmi (misal: <em>YAYASAN AL-HIKMAH - MTSN 1 KOTA MALANG</em>).
+                </span>
+                <span className="text-[10px] font-mono text-amber-400/80">
+                  Pratinjau KOP: {madrasah.namaMadrasahKop || madrasah.namaMadrasah || '-'}
+                </span>
               </div>
+            </div>
+          </div>
 
-              <div className="space-y-1">
-                <label className="block text-xs font-bold text-emerald-300 flex items-center gap-1.5">
-                  <span>🏫 Nama Satuan Pendidikan (Identitas Siswa)</span>
-                </label>
-                <input
-                  type="text"
-                  value={madrasah.namaSatuanPendidikan ?? madrasah.namaMadrasah}
-                  onChange={(e) => handleFieldChange('namaSatuanPendidikan', e.target.value.toUpperCase())}
-                  placeholder="e.g. MI MA'ARIF NU 2 SANGGREMAN"
-                  className="w-full bg-slate-900 border border-emerald-500/50 rounded-lg px-3 py-2 text-xs text-white font-bold focus:outline-none focus:border-emerald-400"
-                />
-                <p className="text-[10px] text-slate-400">Tampil pada rincian biodata siswa (baris 'Madrasah: ...' di kartu & surat).</p>
+          {/* 3. SEKSI TERPISAH: NAMA SATUAN PENDIDIKAN */}
+          <div className="md:col-span-2 space-y-2.5 p-4 bg-gradient-to-br from-emerald-950/30 via-slate-950/80 to-slate-950/90 rounded-xl border border-emerald-500/40 shadow-sm">
+            <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-emerald-500/20">
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 bg-emerald-500/10 rounded-lg border border-emerald-500/30 text-emerald-400">
+                  <GraduationCap className="w-4 h-4" />
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-emerald-300 flex items-center gap-2">
+                    <span>🏫 NAMA SATUAN PENDIDIKAN (Identitas Siswa & Legalisasi)</span>
+                    <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-400/20 text-emerald-200 border border-emerald-400/30">
+                      Khusus Siswa & EMIS
+                    </span>
+                  </h4>
+                  <p className="text-[10.5px] text-emerald-200/70">
+                    Digunakan khusus pada kolom identitas sekolah siswa, surat keterangan aktif, dan cap stempel resmi.
+                  </p>
+                </div>
+              </div>
+              {madrasah.namaMadrasah && (
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => handleFieldChange('namaSatuanPendidikan', madrasah.namaMadrasah)}
+                    className="px-2.5 py-1 text-[11px] font-medium bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-400/40 rounded-md transition flex items-center gap-1"
+                    title="Samakan dengan Nama Madrasah Utama"
+                  >
+                    <span>Samakan dgn Nama Utama</span>
+                  </button>
+                  {madrasah.namaSatuanPendidikan && (
+                    <button
+                      type="button"
+                      onClick={() => handleFieldChange('namaSatuanPendidikan', '')}
+                      className="px-2 py-1 text-[10px] text-slate-400 hover:text-rose-300 transition"
+                      title="Kosongkan agar memakai nama utama secara otomatis"
+                    >
+                      Reset
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-1.5 pt-1">
+              <input
+                type="text"
+                value={madrasah.namaSatuanPendidikan ?? ''}
+                onChange={(e) => handleFieldChange('namaSatuanPendidikan', e.target.value)}
+                placeholder={madrasah.namaMadrasah || "Contoh: MI MA'ARIF NU 2 SANGGREMAN"}
+                className="w-full bg-slate-900 border border-emerald-400/60 rounded-lg px-3 py-2.5 text-sm text-emerald-100 font-bold focus:outline-none focus:border-emerald-300 focus:ring-1 focus:ring-emerald-400 shadow-inner"
+              />
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-[11px] text-slate-400">
+                <span className="text-emerald-200/80">
+                  💡 <strong>Kepentingan Satuan Pendidikan:</strong> Format nama lembaga siswa sesuai izin operasional / EMIS (misal: <em>MI MA'ARIF NU 2 SANGGREMAN</em>).
+                </span>
+                <span className="text-[10px] font-mono text-emerald-400/80">
+                  Pratinjau Siswa: Satuan Pendidikan: {madrasah.namaSatuanPendidikan || madrasah.namaMadrasah || '-'}
+                </span>
               </div>
             </div>
           </div>
@@ -487,8 +576,8 @@ export const MadrasahForm: React.FC<MadrasahFormProps> = ({
             </label>
             <input
               type="text"
-              value={madrasah.kemenagWilayah}
-              onChange={(e) => handleFieldChange('kemenagWilayah', e.target.value.toUpperCase())}
+              value={madrasah.kemenagWilayah || ''}
+              onChange={(e) => handleFieldChange('kemenagWilayah', e.target.value)}
               placeholder="KANTOR KEMENTERIAN AGAMA KABUPATEN BANYUMAS"
               className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-emerald-500"
             />
@@ -498,17 +587,31 @@ export const MadrasahForm: React.FC<MadrasahFormProps> = ({
             <label className="block text-xs font-semibold text-slate-300 mb-1 flex items-center gap-1">
               <Award className="w-3.5 h-3.5 text-amber-400" /> Status Akreditasi
             </label>
-            <select
-              value={madrasah.akreditasi}
-              onChange={(e) => handleFieldChange('akreditasi', e.target.value)}
-              className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
-            >
-              <option value="A">Akreditasi A (Unggul)</option>
-              <option value="B">Akreditasi B (Baik)</option>
-              <option value="C">Akreditasi C</option>
-              <option value="Unggul">Unggul</option>
-              <option value="-">Belum Terakreditasi</option>
-            </select>
+            <div className="space-y-1.5">
+              <input
+                type="text"
+                value={madrasah.akreditasi || ''}
+                onChange={(e) => handleFieldChange('akreditasi', e.target.value)}
+                placeholder="A / Unggul / B"
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500 font-bold"
+              />
+              <div className="flex flex-wrap gap-1">
+                {['A', 'B', 'C', 'Unggul', 'Baik Sekali', '-'].map((preset) => (
+                  <button
+                    key={preset}
+                    type="button"
+                    onClick={() => handleFieldChange('akreditasi', preset)}
+                    className={`text-[10px] px-2 py-0.5 rounded border transition ${
+                      madrasah.akreditasi === preset
+                        ? 'bg-amber-500/20 border-amber-400 text-amber-300 font-bold'
+                        : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200'
+                    }`}
+                  >
+                    {preset === '-' ? 'Belum' : preset}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
 
           <div>
@@ -668,29 +771,43 @@ export const MadrasahForm: React.FC<MadrasahFormProps> = ({
 
           <div>
             <label className="block text-xs font-semibold text-slate-300 mb-1">
-              Jenis Nomor Identitas Pejabat
+              Jenis & Nomor Identitas Pejabat
             </label>
-            <div className="flex gap-2">
-              <select
-                value={madrasah.labelIdPenandatangan || 'NIP'}
-                onChange={(e) => handleFieldChange('labelIdPenandatangan', e.target.value)}
-                className="w-1/3 bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-2 text-xs text-amber-300 font-bold focus:outline-none focus:border-emerald-500"
-              >
-                <option value="NIP">NIP</option>
-                <option value="NIY">NIY</option>
-                <option value="NUPTK">NUPTK</option>
-                <option value="NRG">NRG</option>
-                <option value="PegID">PegID</option>
-                <option value="NIK">NIK</option>
-                <option value="ID">ID</option>
-              </select>
-              <input
-                type="text"
-                value={madrasah.nipKepalaMadrasah}
-                onChange={(e) => handleFieldChange('nipKepalaMadrasah', e.target.value)}
-                placeholder="19760512 200501 1 003"
-                className="w-2/3 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white font-mono focus:outline-none focus:border-emerald-500"
-              />
+            <div className="flex gap-2 items-start">
+              <div className="w-1/3 space-y-1">
+                <input
+                  type="text"
+                  value={madrasah.labelIdPenandatangan ?? 'NIP'}
+                  onChange={(e) => handleFieldChange('labelIdPenandatangan', e.target.value)}
+                  placeholder="NIP / NIY"
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-2 text-xs text-amber-300 font-bold focus:outline-none focus:border-amber-400"
+                />
+                <div className="flex flex-wrap gap-1">
+                  {['NIP', 'NIY', 'NUPTK', 'NRG', 'PegID', 'NIK', '-'].map((preset) => (
+                    <button
+                      key={preset}
+                      type="button"
+                      onClick={() => handleFieldChange('labelIdPenandatangan', preset === '-' ? '' : preset)}
+                      className={`text-[9px] px-1 py-0.5 rounded border transition ${
+                        (madrasah.labelIdPenandatangan || 'NIP') === preset
+                          ? 'bg-amber-500/20 border-amber-400 text-amber-300 font-bold'
+                          : 'bg-slate-900 border-slate-800 text-slate-400'
+                      }`}
+                    >
+                      {preset === '-' ? 'Kosong' : preset}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="w-2/3">
+                <input
+                  type="text"
+                  value={madrasah.nipKepalaMadrasah || ''}
+                  onChange={(e) => handleFieldChange('nipKepalaMadrasah', e.target.value)}
+                  placeholder="19760512 200501 1 003"
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white font-mono focus:outline-none focus:border-emerald-500"
+                />
+              </div>
             </div>
           </div>
 
@@ -860,7 +977,7 @@ export const MadrasahForm: React.FC<MadrasahFormProps> = ({
             <input
               type="text"
               value={madrasah.badgeHeaderAplikasi ?? ''}
-              onChange={(e) => handleFieldChange('badgeHeaderAplikasi', e.target.value.toUpperCase())}
+              onChange={(e) => handleFieldChange('badgeHeaderAplikasi', e.target.value)}
               placeholder="KEMENAG"
               className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-emerald-300 font-bold tracking-wider focus:outline-none focus:border-emerald-400"
             />
@@ -887,15 +1004,28 @@ export const MadrasahForm: React.FC<MadrasahFormProps> = ({
 
           {/* Sub-Judul / Keterangan Samping Judul Header */}
           <div className="md:col-span-2 space-y-1.5">
-            <label className="block text-xs font-semibold text-slate-300 flex items-center justify-between">
-              <span>Sub-Judul / Nama Instansi di Navbar Atas Web</span>
-              <span className="text-[10px] text-slate-400 font-normal">Opsional (Muncul di baris bawah judul navbar aplikasi)</span>
-            </label>
+            <div className="flex items-center justify-between">
+              <label className="block text-xs font-semibold text-slate-300">
+                Sub-Judul / Nama Instansi di Navbar Atas Web
+              </label>
+              <div className="flex items-center gap-2">
+                {madrasah.namaMadrasah && (
+                  <button
+                    type="button"
+                    onClick={() => handleFieldChange('subJudulHeaderAplikasi', madrasah.namaMadrasah)}
+                    className="text-[10px] text-amber-400 hover:text-amber-200 underline"
+                  >
+                    Samakan dengan Nama Madrasah
+                  </button>
+                )}
+                <span className="text-[10px] text-slate-400 font-normal">Opsional</span>
+              </div>
+            </div>
             <input
               type="text"
-              value={madrasah.subJudulHeaderAplikasi ?? madrasah.namaMadrasah}
+              value={madrasah.subJudulHeaderAplikasi ?? ''}
               onChange={(e) => handleFieldChange('subJudulHeaderAplikasi', e.target.value)}
-              placeholder="MI MA'ARIF NU 2 SANGGREMAN"
+              placeholder={madrasah.namaMadrasah || "MI MA'ARIF NU 2 SANGGREMAN"}
               className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-amber-400"
             />
           </div>

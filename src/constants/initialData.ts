@@ -24,6 +24,8 @@ export const INITIAL_LOADER_CONFIG: PageLoaderConfig = {
 export const INITIAL_MADRASAH: MadrasahInfo = {
   namaKementerian: 'KEMENTERIAN AGAMA REPUBLIK INDONESIA',
   namaMadrasah: "MI MA'ARIF NU 2 SANGGREMAN",
+  namaMadrasahKop: "MI MA'ARIF NU 2 SANGGREMAN",
+  namaSatuanPendidikan: "MI MA'ARIF NU 2 SANGGREMAN",
   nsm: '111233020050',
   npsn: '60710255',
   kemenagWilayah: 'KANTOR KEMENTERIAN AGAMA KABUPATEN BANYUMAS',

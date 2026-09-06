@@ -168,7 +168,7 @@ export const CardBack: React.FC<CardBackProps> = ({
                     />
                   ) : (
                     <OfficialStamp
-                      schoolName={madrasah.namaMadrasah}
+                      schoolName={madrasah.namaSatuanPendidikan || madrasah.namaMadrasah}
                       location={madrasah.kotaKab}
                       className="w-18 h-18"
                     />

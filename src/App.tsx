@@ -302,7 +302,6 @@ export default function App() {
     return INITIAL_LOADER_CONFIG;
   });
 
-  const [isEditLocked, setIsEditLocked] = useState<boolean>(false);
   const [activityLogs, setActivityLogs] = useState<ActivityLog[]>(() => {
     const saved = localStorage.getItem('mi_activity_logs');
     if (saved) {
@@ -324,6 +323,7 @@ export default function App() {
   const lastKnownServerTimeRef = useRef<string>('');
   const lastLocalEditTimeRef = useRef<number>(0);
   const lastCardConfigEditTimeRef = useRef<number>(0);
+  const lastMadrasahEditTimeRef = useRef<number>(0);
   const isImportingOrSavingRef = useRef<boolean>(false);
   const isExplicitlyClearedRef = useRef<boolean>(false);
   const studentsRef = useRef<Student[]>(students);
@@ -470,35 +470,36 @@ export default function App() {
           const d = res.data;
           isSyncingFromRemoteRef.current = true;
 
-          // 1. Hydrate Madrasah Profile from server (respect server's exact tahunPelajaran)
-          if (d.madrasah && typeof d.madrasah === 'object' && d.madrasah.namaMadrasah) {
-            let cleanMadrasah = { ...d.madrasah };
-            
-            // Auto-heal server if server has default template but client has custom madrasah
-            if (isDefaultMadrasah(cleanMadrasah) && cachedMadrasah && !isDefaultMadrasah(cachedMadrasah)) {
-              cleanMadrasah = { ...cachedMadrasah };
-              saveCentralServerData({ madrasah: cachedMadrasah }).catch(() => {});
-            }
+          // 1. Hydrate Madrasah Profile (honor server data or newer client edit)
+          const serverTimestamp = d.lastUpdated ? new Date(d.lastUpdated).getTime() : 0;
+          const cachedMadrasahTimeStr = typeof window !== 'undefined' ? localStorage.getItem('mi_madrasah_updated_at') : null;
+          const cachedMadrasahTime = cachedMadrasahTimeStr ? parseInt(cachedMadrasahTimeStr, 10) : 0;
 
+          if (cachedMadrasah && cachedMadrasahTime > serverTimestamp) {
+            // Local client edits are newer than server: preserve local madrasah and sync to server!
+            setMadrasah(cachedMadrasah);
+            madrasahRef.current = cachedMadrasah;
+            lastMadrasahEditTimeRef.current = cachedMadrasahTime;
+            saveCentralServerData({ madrasah: cachedMadrasah }).catch(() => {});
+          } else if (d.madrasah && typeof d.madrasah === 'object') {
+            let cleanMadrasah = { ...d.madrasah };
             if (!cleanMadrasah.tahunPelajaran) {
               cleanMadrasah.tahunPelajaran = INITIAL_MADRASAH.tahunPelajaran;
             }
             if (!cleanMadrasah.judulHeaderAplikasi) {
               cleanMadrasah.judulHeaderAplikasi = INITIAL_MADRASAH.judulHeaderAplikasi;
-              cleanMadrasah.subJudulHeaderAplikasi = cleanMadrasah.namaMadrasah || INITIAL_MADRASAH.subJudulHeaderAplikasi;
-              cleanMadrasah.badgeHeaderAplikasi = INITIAL_MADRASAH.badgeHeaderAplikasi;
-              cleanMadrasah.showMadrasahInHeader = INITIAL_MADRASAH.showMadrasahInHeader;
-            } else if (cleanMadrasah.subJudulHeaderAplikasi === INITIAL_MADRASAH.subJudulHeaderAplikasi && cleanMadrasah.namaMadrasah && cleanMadrasah.namaMadrasah !== INITIAL_MADRASAH.namaMadrasah) {
-              cleanMadrasah.subJudulHeaderAplikasi = cleanMadrasah.namaMadrasah;
             }
             setMadrasah(cleanMadrasah);
+            madrasahRef.current = cleanMadrasah;
+            lastMadrasahEditTimeRef.current = serverTimestamp;
             try {
               localStorage.setItem('mi_madrasah_info', JSON.stringify(cleanMadrasah));
-              localStorage.setItem('mi_madrasah_updated_at', Date.now().toString());
+              localStorage.setItem('mi_madrasah_updated_at', serverTimestamp.toString());
             } catch (e) {}
             setPersistentItem('mi_madrasah_info', cleanMadrasah).catch(() => {});
-          } else if (cachedMadrasah && cachedMadrasah.namaMadrasah) {
+          } else if (cachedMadrasah) {
             setMadrasah(cachedMadrasah);
+            madrasahRef.current = cachedMadrasah;
             saveCentralServerData({ madrasah: cachedMadrasah }).catch(() => {});
           }
 
@@ -535,7 +536,6 @@ export default function App() {
           }
 
           // 3. Hydrate Card Design Config from server
-          const serverTimestamp = d.lastUpdated ? new Date(d.lastUpdated).getTime() : 0;
           const cachedTimeStr = typeof window !== 'undefined' ? localStorage.getItem('mi_card_config_updated_at') : null;
           const cachedTime = cachedTimeStr ? parseInt(cachedTimeStr, 10) : 0;
 
@@ -809,12 +809,17 @@ export default function App() {
           if (payload && syncStatusRef.current !== 'saving') {
             isSyncingFromRemoteRef.current = true;
             if (payload.madrasah) {
-              setMadrasah(payload.madrasah);
-              try {
-                localStorage.setItem('mi_madrasah_info', JSON.stringify(payload.madrasah));
-                localStorage.setItem('mi_madrasah_updated_at', Date.now().toString());
-              } catch (e) {}
-              setPersistentItem('mi_madrasah_info', payload.madrasah).catch(() => {});
+              const incomingTimestamp = event.data.timestamp || Date.now();
+              if (incomingTimestamp > lastMadrasahEditTimeRef.current) {
+                lastMadrasahEditTimeRef.current = incomingTimestamp;
+                setMadrasah(payload.madrasah);
+                madrasahRef.current = payload.madrasah;
+                try {
+                  localStorage.setItem('mi_madrasah_info', JSON.stringify(payload.madrasah));
+                  localStorage.setItem('mi_madrasah_updated_at', incomingTimestamp.toString());
+                } catch (e) {}
+                setPersistentItem('mi_madrasah_info', payload.madrasah).catch(() => {});
+              }
             }
             if (payload.students) {
               setStudents(payload.students);
@@ -871,17 +876,19 @@ export default function App() {
             const incomingTime = payload.lastUpdated || raw.lastUpdated;
             if (incomingTime && incomingTime !== lastKnownServerTimeRef.current) {
               isSyncingFromRemoteRef.current = true;
-              if (payload.madrasah && typeof payload.madrasah === 'object' && payload.madrasah.namaMadrasah) {
-                const cleanMad = { ...payload.madrasah };
-                if (cleanMad.subJudulHeaderAplikasi === INITIAL_MADRASAH.subJudulHeaderAplikasi && cleanMad.namaMadrasah && cleanMad.namaMadrasah !== INITIAL_MADRASAH.namaMadrasah) {
-                  cleanMad.subJudulHeaderAplikasi = cleanMad.namaMadrasah;
+              if (payload.madrasah && typeof payload.madrasah === 'object') {
+                const incomingTimestamp = payload.lastUpdated ? new Date(payload.lastUpdated).getTime() : (incomingTime ? new Date(incomingTime).getTime() : 0);
+                if (incomingTimestamp > lastMadrasahEditTimeRef.current) {
+                  lastMadrasahEditTimeRef.current = incomingTimestamp;
+                  const cleanMad = { ...payload.madrasah };
+                  setMadrasah(cleanMad);
+                  madrasahRef.current = cleanMad;
+                  try {
+                    localStorage.setItem('mi_madrasah_info', JSON.stringify(cleanMad));
+                    localStorage.setItem('mi_madrasah_updated_at', incomingTimestamp.toString());
+                  } catch (e) {}
+                  setPersistentItem('mi_madrasah_info', cleanMad).catch(() => {});
                 }
-                setMadrasah(cleanMad);
-                try {
-                  localStorage.setItem('mi_madrasah_info', JSON.stringify(cleanMad));
-                  localStorage.setItem('mi_madrasah_updated_at', Date.now().toString());
-                } catch (e) {}
-                setPersistentItem('mi_madrasah_info', cleanMad).catch(() => {});
               }
               if (payload.students !== undefined && Array.isArray(payload.students)) {
                 const cleanPayloadStudents = purgeMockStudents(payload.students);
@@ -973,9 +980,8 @@ export default function App() {
         const isTimeDiff = v.lastUpdated && v.lastUpdated !== lastKnownServerTimeRef.current;
         const isCountDiff = v.totalStudents !== undefined && v.totalStudents !== studentsRef.current.length;
         const isYearDiff = v.tahunPelajaran && v.tahunPelajaran !== madrasahRef.current.tahunPelajaran;
-        const isNameDiff = v.madrasahName && v.madrasahName !== madrasahRef.current.namaMadrasah;
 
-        if (isTimeDiff || isCountDiff || isYearDiff || isNameDiff) {
+        if (isTimeDiff || isCountDiff || isYearDiff) {
           // If the user was actively modifying state locally within the last 3s or has pending edits, wait for pause
           if (Date.now() - lastLocalEditTimeRef.current < 3000 || hasPendingUserEditsRef.current) {
             return;
@@ -986,17 +992,19 @@ export default function App() {
           if (res.success && res.data) {
             const d = res.data;
             isSyncingFromRemoteRef.current = true;
-            if (d.madrasah && typeof d.madrasah === 'object' && d.madrasah.namaMadrasah) {
-              const cleanMad = { ...d.madrasah };
-              if (cleanMad.subJudulHeaderAplikasi === INITIAL_MADRASAH.subJudulHeaderAplikasi && cleanMad.namaMadrasah && cleanMad.namaMadrasah !== INITIAL_MADRASAH.namaMadrasah) {
-                cleanMad.subJudulHeaderAplikasi = cleanMad.namaMadrasah;
+            if (d.madrasah && typeof d.madrasah === 'object') {
+              const incomingTimestamp = (d.lastUpdated || v.lastUpdated) ? new Date(d.lastUpdated || v.lastUpdated).getTime() : 0;
+              if (incomingTimestamp > lastMadrasahEditTimeRef.current) {
+                lastMadrasahEditTimeRef.current = incomingTimestamp;
+                const cleanMad = { ...d.madrasah };
+                setMadrasah(cleanMad);
+                madrasahRef.current = cleanMad;
+                try {
+                  localStorage.setItem('mi_madrasah_info', JSON.stringify(cleanMad));
+                  localStorage.setItem('mi_madrasah_updated_at', incomingTimestamp.toString());
+                } catch (e) {}
+                setPersistentItem('mi_madrasah_info', cleanMad).catch(() => {});
               }
-              setMadrasah(cleanMad);
-              try {
-                localStorage.setItem('mi_madrasah_info', JSON.stringify(cleanMad));
-                localStorage.setItem('mi_madrasah_updated_at', Date.now().toString());
-              } catch (e) {}
-              setPersistentItem('mi_madrasah_info', cleanMad).catch(() => {});
             }
             if (d.students !== undefined && Array.isArray(d.students)) {
               const cleanPollerStudents = purgeMockStudents(d.students);
@@ -1297,24 +1305,28 @@ export default function App() {
 
   const handleUpdateMadrasah = (updated: MadrasahInfo) => {
     markUserEdited();
+    const editTime = Date.now();
+    lastMadrasahEditTimeRef.current = editTime;
     try {
-      const ts = Date.now().toString();
+      const ts = editTime.toString();
       localStorage.setItem('mi_madrasah_updated_at', ts);
       localStorage.setItem('mi_madrasah_info_updated_at', ts);
       localStorage.setItem('mi_madrasah_info', JSON.stringify(updated));
       localStorage.setItem('mi_data_has_user_edits', 'true');
     } catch (e) {}
     setMadrasah(updated);
+    madrasahRef.current = updated;
     setSyncStatus('saving');
     
-    // 1. Immediately write to persistent IndexedDB storage
+    // 1. Immediately write to persistent IndexedDB storage & Vault
     setPersistentItem('mi_madrasah_info', updated).catch(() => {});
+    saveToPermanentVault(updated, undefined, undefined, undefined).catch(() => {});
 
     // 2. Broadcast immediately via BroadcastChannel
     try {
       if (typeof BroadcastChannel !== 'undefined') {
         const bc = new BroadcastChannel('mi_realtime_channel');
-        bc.postMessage({ type: 'local_sync', payload: { madrasah: updated }, timestamp: Date.now() });
+        bc.postMessage({ type: 'local_sync', payload: { madrasah: updated }, timestamp: editTime });
         bc.close();
       }
     } catch (e) {}
@@ -1325,6 +1337,10 @@ export default function App() {
         if (res && res.lastUpdated) {
           setLastServerUpdate(res.lastUpdated);
           lastKnownServerTimeRef.current = res.lastUpdated;
+          const resTime = new Date(res.lastUpdated).getTime();
+          if (resTime > lastMadrasahEditTimeRef.current) {
+            lastMadrasahEditTimeRef.current = resTime;
+          }
         }
         hasPendingUserEditsRef.current = false;
         setSyncStatus('synced');
@@ -1339,7 +1355,9 @@ export default function App() {
     const finalConfig = updatedConfig || cardConfigRef.current;
     markUserEdited();
     const editTime = Date.now();
+    lastMadrasahEditTimeRef.current = editTime;
     lastCardConfigEditTimeRef.current = editTime;
+    madrasahRef.current = updated;
     cardConfigRef.current = finalConfig;
     
     try {
@@ -1356,8 +1374,9 @@ export default function App() {
     }
     setSyncStatus('saving');
     
-    // 1. Immediately write to persistent IndexedDB storage & LocalStorage
+    // 1. Immediately write to persistent IndexedDB storage & LocalStorage & Vault
     await setPersistentItem('mi_madrasah_info', updated);
+    saveToPermanentVault(updated, undefined, finalConfig, undefined).catch(() => {});
     if (finalConfig) {
       await setPersistentItem('mi_card_config', finalConfig);
     }
@@ -1388,6 +1407,9 @@ export default function App() {
         if (resTime > lastCardConfigEditTimeRef.current) {
           lastCardConfigEditTimeRef.current = resTime;
         }
+        if (resTime > lastMadrasahEditTimeRef.current) {
+          lastMadrasahEditTimeRef.current = resTime;
+        }
       }
       hasPendingUserEditsRef.current = false;
       setSyncStatus('synced');
@@ -1400,21 +1422,25 @@ export default function App() {
 
   const handleSaveSignature = async (updated: MadrasahInfo) => {
     markUserEdited();
+    const editTime = Date.now();
+    lastMadrasahEditTimeRef.current = editTime;
+    madrasahRef.current = updated;
     try {
-      localStorage.setItem('mi_madrasah_updated_at', Date.now().toString());
+      localStorage.setItem('mi_madrasah_updated_at', editTime.toString());
       localStorage.setItem('mi_madrasah_info', JSON.stringify(updated));
     } catch (e) {}
     setMadrasah(updated);
     setSyncStatus('saving');
     
-    // 1. Immediately write to persistent IndexedDB storage & LocalStorage
+    // 1. Immediately write to persistent IndexedDB storage & LocalStorage & Vault
     await setPersistentItem('mi_madrasah_info', updated);
+    saveToPermanentVault(updated, undefined, undefined, undefined).catch(() => {});
 
     // 2. Broadcast immediately via BroadcastChannel
     try {
       if (typeof BroadcastChannel !== 'undefined') {
         const bc = new BroadcastChannel('mi_realtime_channel');
-        bc.postMessage({ type: 'local_sync', payload: { madrasah: updated }, timestamp: Date.now() });
+        bc.postMessage({ type: 'local_sync', payload: { madrasah: updated }, timestamp: editTime });
         bc.close();
       }
     } catch (e) {}
@@ -1433,6 +1459,9 @@ export default function App() {
         setLastServerUpdate(res.lastUpdated);
         lastKnownServerTimeRef.current = res.lastUpdated;
         const resTime = new Date(res.lastUpdated).getTime();
+        if (resTime > lastMadrasahEditTimeRef.current) {
+          lastMadrasahEditTimeRef.current = resTime;
+        }
         if (resTime > lastCardConfigEditTimeRef.current) {
           lastCardConfigEditTimeRef.current = resTime;
         }
@@ -1440,6 +1469,7 @@ export default function App() {
       hasPendingUserEditsRef.current = false;
       setSyncStatus('synced');
     } catch (e) {
+      hasPendingUserEditsRef.current = false;
       setSyncStatus('synced');
     }
     addLog('Update Tanda Tangan & Stempel', `Memperbarui tanda tangan ${updated.namaKepalaMadrasah} dan stempel resmi`, 'edit');
@@ -1760,21 +1790,11 @@ export default function App() {
         onOpenBackupRestore={() => setIsBackupRestoreModalOpen(true)}
         onOpenEmisExcelImport={() => setIsEmisExcelModalOpen(true)}
         onOpenSignaturePad={() => setIsSignaturePadOpen(true)}
-        isEditLocked={isEditLocked}
-        onToggleEditLock={() => setIsEditLocked(!isEditLocked)}
         syncStatus={syncStatus}
         onManualSync={handleManualSync}
         onForceRefresh={handleForceRefresh}
         isRealtimeConnected={isRealtimeConnected}
       />
-
-      {/* EDIT MODE LOCK NOTICE IF LOCKED */}
-      {isEditLocked && currentView === 'admin_dashboard' && currentUser?.isAuthenticated && (
-        <div className="bg-amber-950/80 border-b border-amber-800/80 px-4 py-1.5 text-center text-xs text-amber-300 flex items-center justify-center gap-2 no-print">
-          <Lock className="w-3.5 h-3.5" />
-          <span>Mode Edit saat ini dikunci untuk mencegah perubahan tidak disengaja.</span>
-        </div>
-      )}
 
       {/* MAIN VIEW SWITCHING: DASHBOARD ADMIN (PROTECTED) vs CARD DESIGN EDITOR */}
       {currentView === 'admin_dashboard' && currentUser?.isAuthenticated ? (

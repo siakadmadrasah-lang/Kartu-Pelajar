@@ -254,9 +254,9 @@ function readDb() {
     } else if (chosen.students.length === 0 && rootBackupData && Array.isArray(rootBackupData.students) && rootBackupData.students.length > 0) {
       chosen.students = rootBackupData.students;
     }
-    // Sync madrasah from vault if present
-    if (vaultMadrasah && vaultMadrasah.namaMadrasah) {
-      chosen.madrasah = { ...chosen.madrasah, ...vaultMadrasah };
+    // Sync madrasah from vault ONLY if chosen has no madrasah data
+    if ((!chosen.madrasah || !chosen.madrasah.namaMadrasah) && vaultMadrasah && vaultMadrasah.namaMadrasah) {
+      chosen.madrasah = vaultMadrasah;
     }
     inMemoryDb = chosen;
     return inMemoryDb;
@@ -308,8 +308,8 @@ function writeDb(data: any, isExplicitClear: boolean = false) {
       } catch (e) {}
     }
 
-    // Check permanent madrasah vault safeguarding
-    if (data.madrasah && typeof data.madrasah === 'object' && data.madrasah.namaMadrasah) {
+    // Check permanent madrasah vault safeguarding - always keep vault in sync with latest madrasah
+    if (data.madrasah && typeof data.madrasah === 'object') {
       try {
         fs.writeFileSync(MADRASAH_VAULT_FILE, JSON.stringify(data.madrasah, null, 2), 'utf-8');
       } catch (errVault) {

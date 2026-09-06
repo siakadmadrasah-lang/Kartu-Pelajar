@@ -170,20 +170,19 @@ export const StudentForm: React.FC<StudentFormProps> = ({
           <input
             type="text"
             value={student.nama}
-            onChange={(e) => handleFieldChange('nama', e.target.value.toUpperCase())}
+            onChange={(e) => handleFieldChange('nama', e.target.value)}
             placeholder="Contoh: AHMAD ZAKI AL-FARIZI"
             className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white font-semibold focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
           />
         </div>
 
-        {/* NISN (10 digits) */}
+        {/* NISN */}
         <div>
           <label className="block text-xs font-semibold text-slate-300 mb-1 flex items-center gap-1">
-            <CreditCard className="w-3.5 h-3.5 text-amber-400" /> NISN (10 Digit Nasional) *
+            <CreditCard className="w-3.5 h-3.5 text-amber-400" /> NISN (Nomor Induk Siswa Nasional) *
           </label>
           <input
             type="text"
-            maxLength={10}
             value={student.nisn}
             onChange={(e) => handleFieldChange('nisn', e.target.value)}
             placeholder="0148923451"

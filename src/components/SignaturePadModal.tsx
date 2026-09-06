@@ -876,7 +876,7 @@ export const SignaturePadModal: React.FC<SignaturePadModalProps> = ({
                     />
                   ) : (
                     <OfficialStamp
-                      schoolName={madrasah.namaMadrasah}
+                      schoolName={madrasah.namaSatuanPendidikan || madrasah.namaMadrasah}
                       location={madrasah.kotaKab}
                       className="w-24 h-24"
                     />
@@ -927,7 +927,7 @@ export const SignaturePadModal: React.FC<SignaturePadModalProps> = ({
                     />
                   ) : (
                     <OfficialStamp
-                      schoolName={madrasah.namaMadrasah}
+                      schoolName={madrasah.namaSatuanPendidikan || madrasah.namaMadrasah}
                       location={madrasah.kotaKab}
                       className="w-16 h-16"
                     />

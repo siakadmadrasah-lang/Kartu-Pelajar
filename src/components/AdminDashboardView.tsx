@@ -975,7 +975,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                       />
                     ) : (
                       <OfficialStamp
-                        schoolName={madrasah.namaMadrasah}
+                        schoolName={madrasah.namaSatuanPendidikan || madrasah.namaMadrasah}
                         location={madrasah.kotaKab}
                         className="w-16 h-16"
                       />
