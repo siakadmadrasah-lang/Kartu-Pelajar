@@ -324,7 +324,10 @@ export const AdminHeaderBar: React.FC<AdminHeaderBarProps> = ({
                   <button
                     key={item.id}
                     type="button"
-                    onClick={() => onSelectDashboardTab(item.id)}
+                    onClick={() => {
+                      onSelectDashboardTab(item.id);
+                      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+                    }}
                     title={item.label}
                     className={`group relative flex flex-col items-center justify-center p-1.5 sm:py-2 sm:px-2 rounded-xl text-center transition-all duration-150 active:scale-95 ${
                       isActive

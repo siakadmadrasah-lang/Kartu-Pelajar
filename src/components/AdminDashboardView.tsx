@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   AdminUser, 
   MadrasahInfo, 
@@ -124,6 +124,12 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
   const [internalTab, setInternalTab] = useState<DashboardTab>('students');
   const activeDashboardTab = propActiveTab ?? internalTab;
   const setActiveDashboardTab = onSelectDashboardTab ?? setInternalTab;
+
+  // Otomatis langsung tampilkan halaman di bagian paling atas tanpa slide/animasi gulir
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }, [activeDashboardTab]);
+
   const [searchTerm, setSearchTerm] = useState('');
   const [classFilter, setClassFilter] = useState('ALL');
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
@@ -242,14 +248,17 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
     <div className="space-y-6 animate-in fade-in duration-200">
       {/* FLOATING ACTION TOAST NOTIFICATION */}
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 bg-emerald-950 border border-emerald-500 text-emerald-100 px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2.5 animate-in slide-in-from-bottom-5">
+        <div className="fixed bottom-6 right-6 z-50 bg-emerald-950 border border-emerald-500 text-emerald-100 px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2.5 animate-in fade-in duration-150">
           <Check className="w-4 h-4 text-emerald-400 shrink-0" />
           <span className="text-xs font-bold">{toastMessage}</span>
         </div>
       )}
 
-      {/* TOP WELCOME & SUMMARY BANNER */}
-      <div className="bg-gradient-to-r from-emerald-950 via-slate-900 to-teal-950 p-5 rounded-2xl border border-emerald-700/60 shadow-xl flex flex-wrap items-center justify-between gap-4">
+      {/* DASHBOARD OVERVIEW & QUICK LAUNCH (KHUSUS TAB DATA SISWA) */}
+      {activeDashboardTab === 'students' && (
+        <>
+          {/* TOP WELCOME & SUMMARY BANNER */}
+          <div className="bg-gradient-to-r from-emerald-950 via-slate-900 to-teal-950 p-5 rounded-2xl border border-emerald-700/60 shadow-xl flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
           <div 
             onClick={() => setActiveDashboardTab('madrasah')}
@@ -502,6 +511,8 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
           </button>
         </div>
       </div>
+      </>
+      )}
 
       {/* TAB CONTENT 1: STUDENTS DIRECTORY & EMIS MANAGEMENT */}
       {activeDashboardTab === 'students' && (
