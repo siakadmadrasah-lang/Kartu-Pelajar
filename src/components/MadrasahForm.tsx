@@ -12,7 +12,9 @@ import {
   Save,
   School,
   Calendar,
-  Check
+  Check,
+  RotateCcw,
+  PenTool
 } from 'lucide-react';
 
 interface MadrasahFormProps {
