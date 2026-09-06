@@ -6,7 +6,8 @@ import {
   CardConfig, 
   ActivityLog,
   PageLoaderConfig,
-  KopSuratConfig
+  KopSuratConfig,
+  DashboardTab
 } from '../types';
 import { INITIAL_KOP_SURAT_CONFIG } from '../constants/initialData';
 import { 
@@ -82,6 +83,8 @@ interface AdminDashboardViewProps {
   onManualSync?: () => void;
   onRefreshFromServer?: () => void;
   lastServerUpdate?: string;
+  activeDashboardTab?: DashboardTab;
+  onSelectDashboardTab?: (tab: DashboardTab) => void;
 }
 
 export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
@@ -115,8 +118,12 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
   onManualSync,
   onRefreshFromServer,
   lastServerUpdate,
+  activeDashboardTab: propActiveTab,
+  onSelectDashboardTab,
 }) => {
-  const [activeDashboardTab, setActiveDashboardTab] = useState<'students' | 'madrasah' | 'header-branding' | 'page-loader' | 'kopsurat' | 'signature' | 'design' | 'logs'>('students');
+  const [internalTab, setInternalTab] = useState<DashboardTab>('students');
+  const activeDashboardTab = propActiveTab ?? internalTab;
+  const setActiveDashboardTab = onSelectDashboardTab ?? setInternalTab;
   const [searchTerm, setSearchTerm] = useState('');
   const [classFilter, setClassFilter] = useState('ALL');
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
@@ -494,105 +501,6 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
             <span className="text-[10px] text-slate-400 block">Paket Siap Pasang</span>
           </button>
         </div>
-      </div>
-
-      {/* DASHBOARD SECTION TABS */}
-      <div className="bg-slate-900/90 p-1.5 rounded-2xl border border-slate-800 flex flex-wrap gap-1">
-        <button
-          onClick={() => setActiveDashboardTab('students')}
-          className={`py-2 px-4 rounded-xl text-xs font-bold flex items-center gap-2 transition ${
-            activeDashboardTab === 'students'
-              ? 'bg-emerald-600 text-white shadow-sm'
-              : 'text-slate-400 hover:text-white hover:bg-slate-800'
-          }`}
-        >
-          <Users className="w-4 h-4" />
-          <span>1. Master Data Siswa ({students.length})</span>
-        </button>
-
-        <button
-          onClick={() => setActiveDashboardTab('madrasah')}
-          className={`py-2 px-4 rounded-xl text-xs font-bold flex items-center gap-2 transition ${
-            activeDashboardTab === 'madrasah'
-              ? 'bg-emerald-600 text-white shadow-sm'
-              : 'text-slate-400 hover:text-white hover:bg-slate-800'
-          }`}
-        >
-          <Building2 className="w-4 h-4" />
-          <span>2. Profil Madrasah</span>
-        </button>
-
-        <button
-          onClick={() => setActiveDashboardTab('header-branding')}
-          className={`py-2 px-4 rounded-xl text-xs font-bold flex items-center gap-2 transition ${
-            activeDashboardTab === 'header-branding'
-              ? 'bg-amber-500 text-slate-950 font-extrabold shadow-sm'
-              : 'text-slate-400 hover:text-white hover:bg-slate-800'
-          }`}
-        >
-          <Sparkles className="w-4 h-4 text-amber-400" />
-          <span>3. Branding Header Web</span>
-        </button>
-
-        <button
-          onClick={() => setActiveDashboardTab('page-loader')}
-          className={`py-2 px-4 rounded-xl text-xs font-bold flex items-center gap-2 transition ${
-            activeDashboardTab === 'page-loader'
-              ? 'bg-emerald-600 text-white shadow-sm'
-              : 'text-slate-400 hover:text-white hover:bg-slate-800'
-          }`}
-        >
-          <Layers className="w-4 h-4 text-emerald-400" />
-          <span>4. Logo Page Loader</span>
-        </button>
-
-        <button
-          onClick={() => setActiveDashboardTab('kopsurat')}
-          className={`py-2 px-4 rounded-xl text-xs font-bold flex items-center gap-2 transition ${
-            activeDashboardTab === 'kopsurat'
-              ? 'bg-emerald-600 text-white shadow-sm'
-              : 'text-slate-400 hover:text-white hover:bg-slate-800'
-          }`}
-        >
-          <FileText className="w-4 h-4" />
-          <span>5. Modul Kop Surat (Mandiri)</span>
-        </button>
-
-        <button
-          onClick={() => setActiveDashboardTab('signature')}
-          className={`py-2 px-4 rounded-xl text-xs font-bold flex items-center gap-2 transition ${
-            activeDashboardTab === 'signature'
-              ? 'bg-emerald-600 text-white shadow-sm'
-              : 'text-slate-400 hover:text-white hover:bg-slate-800'
-          }`}
-        >
-          <PenTool className="w-4 h-4" />
-          <span>6. Penandatanganan & Stempel</span>
-        </button>
-
-        <button
-          onClick={() => setActiveDashboardTab('design')}
-          className={`py-2 px-4 rounded-xl text-xs font-bold flex items-center gap-2 transition ${
-            activeDashboardTab === 'design'
-              ? 'bg-emerald-600 text-white shadow-sm'
-              : 'text-slate-400 hover:text-white hover:bg-slate-800'
-          }`}
-        >
-          <Palette className="w-4 h-4" />
-          <span>7. Desain & Format Kartu</span>
-        </button>
-
-        <button
-          onClick={() => setActiveDashboardTab('logs')}
-          className={`py-2 px-4 rounded-xl text-xs font-bold flex items-center gap-2 transition ${
-            activeDashboardTab === 'logs'
-              ? 'bg-emerald-600 text-white shadow-sm'
-              : 'text-slate-400 hover:text-white hover:bg-slate-800'
-          }`}
-        >
-          <History className="w-4 h-4" />
-          <span>8. Log Audit ({activityLogs.length})</span>
-        </button>
       </div>
 
       {/* TAB CONTENT 1: STUDENTS DIRECTORY & EMIS MANAGEMENT */}

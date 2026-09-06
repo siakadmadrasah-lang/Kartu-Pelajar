@@ -7,7 +7,8 @@ import {
   AdminUser, 
   ActivityLog,
   PageLoaderConfig,
-  KopSuratConfig
+  KopSuratConfig,
+  DashboardTab
 } from './types';
 import { 
   INITIAL_CARD_CONFIG, 
@@ -322,6 +323,9 @@ export default function App() {
     }
     return INITIAL_LOGS;
   });
+
+  // Admin Dashboard Active Tab State (Navigasi Terintegrasi Navbar)
+  const [activeDashboardTab, setActiveDashboardTab] = useState<DashboardTab>('students');
 
   // Central Database Sync State & Tracking
   const [syncStatus, setSyncStatus] = useState<'synced' | 'saving' | 'syncing' | 'error'>('synced');
@@ -1871,6 +1875,10 @@ export default function App() {
         onManualSync={handleManualSync}
         onForceRefresh={handleForceRefresh}
         isRealtimeConnected={isRealtimeConnected}
+        activeDashboardTab={activeDashboardTab}
+        onSelectDashboardTab={setActiveDashboardTab}
+        studentsCount={students.length}
+        logsCount={activityLogs.length}
       />
 
       {/* MAIN VIEW SWITCHING: DASHBOARD ADMIN (PROTECTED) vs CARD DESIGN EDITOR */}
@@ -1882,6 +1890,8 @@ export default function App() {
             students={students}
             config={cardConfig}
             activityLogs={activityLogs}
+            activeDashboardTab={activeDashboardTab}
+            onSelectDashboardTab={setActiveDashboardTab}
             onUpdateMadrasah={handleUpdateMadrasah}
             onExplicitSaveMadrasah={handleExplicitSaveMadrasah}
             onUpdateStudents={handleUpdateStudents}

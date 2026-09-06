@@ -245,4 +245,14 @@ export interface KopSuratConfig {
   paddingX: number;
 }
 
+export type DashboardTab = 
+  | 'students' 
+  | 'madrasah' 
+  | 'header-branding' 
+  | 'page-loader' 
+  | 'kopsurat' 
+  | 'signature' 
+  | 'design' 
+  | 'logs';
+
 

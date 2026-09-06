@@ -1,5 +1,5 @@
-import React from 'react';
-import { AdminUser, MadrasahInfo } from '../types';
+import React, { useState } from 'react';
+import { AdminUser, MadrasahInfo, DashboardTab } from '../types';
 import { KemenagLogo } from './Logos';
 import { 
   ShieldCheck, 
@@ -26,7 +26,13 @@ import {
   Printer,
   Layers,
   ShieldAlert,
-  RefreshCw
+  RefreshCw,
+  Users,
+  Building2,
+  Palette,
+  LayoutGrid,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 
 interface AdminHeaderBarProps {
@@ -52,6 +58,10 @@ interface AdminHeaderBarProps {
   onManualSync?: () => void;
   onForceRefresh?: () => void;
   isRealtimeConnected?: boolean;
+  activeDashboardTab?: DashboardTab;
+  onSelectDashboardTab?: (tab: DashboardTab) => void;
+  studentsCount?: number;
+  logsCount?: number;
 }
 
 export const AdminHeaderBar: React.FC<AdminHeaderBarProps> = ({
@@ -71,7 +81,90 @@ export const AdminHeaderBar: React.FC<AdminHeaderBarProps> = ({
   onManualSync,
   onForceRefresh,
   isRealtimeConnected = true,
+  activeDashboardTab = 'students',
+  onSelectDashboardTab,
+  studentsCount = 0,
+  logsCount = 0,
 }) => {
+  const [isGridMenuOpen, setIsGridMenuOpen] = useState(true);
+
+  const navModules: {
+    id: DashboardTab;
+    label: string;
+    shortLabel: string;
+    num: string;
+    icon: React.ComponentType<{ className?: string }>;
+    accentColor: string;
+    count?: number;
+  }[] = [
+    {
+      id: 'students',
+      label: 'Master Data Siswa',
+      shortLabel: 'Data Siswa',
+      num: '1',
+      icon: Users,
+      accentColor: 'text-emerald-400',
+      count: studentsCount,
+    },
+    {
+      id: 'madrasah',
+      label: 'Profil Madrasah',
+      shortLabel: 'Profil MI',
+      num: '2',
+      icon: Building2,
+      accentColor: 'text-sky-400',
+    },
+    {
+      id: 'header-branding',
+      label: 'Branding Header Web',
+      shortLabel: 'Header Web',
+      num: '3',
+      icon: Sparkles,
+      accentColor: 'text-amber-400',
+    },
+    {
+      id: 'page-loader',
+      label: 'Logo Page Loader',
+      shortLabel: 'Page Loader',
+      num: '4',
+      icon: Layers,
+      accentColor: 'text-teal-400',
+    },
+    {
+      id: 'kopsurat',
+      label: 'Modul Kop Surat Mandiri',
+      shortLabel: 'Kop Surat',
+      num: '5',
+      icon: FileText,
+      accentColor: 'text-emerald-400',
+    },
+    {
+      id: 'signature',
+      label: 'Penandatanganan & Stempel',
+      shortLabel: 'TTD & Stempel',
+      num: '6',
+      icon: PenTool,
+      accentColor: 'text-indigo-400',
+    },
+    {
+      id: 'design',
+      label: 'Desain & Format Kartu',
+      shortLabel: 'Desain Kartu',
+      num: '7',
+      icon: Palette,
+      accentColor: 'text-pink-400',
+    },
+    {
+      id: 'logs',
+      label: 'Log Audit Sistem',
+      shortLabel: 'Log Audit',
+      num: '8',
+      icon: History,
+      accentColor: 'text-slate-400',
+      count: logsCount,
+    },
+  ];
+
   return (
     <header className="sticky top-0 z-40 bg-slate-950/95 backdrop-blur-md border-b border-slate-800/90 shadow-lg no-print w-full">
       <div className="max-w-7xl mx-auto px-3 sm:px-6 py-2 sm:py-2.5 flex items-center justify-between gap-2">
@@ -174,15 +267,36 @@ export const AdminHeaderBar: React.FC<AdminHeaderBarProps> = ({
               </button>
             )
           ) : (
-            /* ADMIN VIEW: Switch back to Public Portal + Quick logout */
+            /* ADMIN VIEW: Grid Menu Toggle + Switch to Public Portal + Logout */
             <div className="flex items-center gap-1.5">
+              {onSelectDashboardTab && (
+                <button
+                  type="button"
+                  onClick={() => setIsGridMenuOpen(!isGridMenuOpen)}
+                  className={`px-2 sm:px-2.5 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 border transition active:scale-95 ${
+                    isGridMenuOpen
+                      ? 'bg-emerald-950/70 text-emerald-300 border-emerald-500/40 shadow-sm'
+                      : 'bg-slate-900 text-slate-300 border-slate-800 hover:bg-slate-800'
+                  }`}
+                  title={isGridMenuOpen ? "Tutup Grid Menu" : "Buka Grid Menu"}
+                >
+                  <LayoutGrid className="w-3.5 h-3.5 text-amber-400" />
+                  <span className="hidden xs:inline text-[11px]">Menu</span>
+                  {isGridMenuOpen ? (
+                    <ChevronUp className="w-3 h-3 text-emerald-400" />
+                  ) : (
+                    <ChevronDown className="w-3 h-3 text-slate-400" />
+                  )}
+                </button>
+              )}
+
               <button
                 onClick={() => onSwitchView('card_editor')}
-                className="px-2.5 sm:px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg text-xs flex items-center gap-1.5 shadow-md transition active:scale-95"
+                className="px-2.5 sm:px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg text-xs flex items-center gap-1.5 shadow-md transition active:scale-95"
                 title="Kembali ke Portal Publik Siswa"
               >
                 <Eye className="w-3.5 h-3.5 text-emerald-200" />
-                <span>Portal Siswa</span>
+                <span className="hidden xs:inline">Portal Siswa</span>
               </button>
 
               <button
@@ -196,6 +310,64 @@ export const AdminHeaderBar: React.FC<AdminHeaderBarProps> = ({
           )}
         </div>
       </div>
+
+      {/* NAVBAR GRID MENU: Grid Cantik Minimalis (8 Modul) */}
+      {currentView === 'admin_dashboard' && onSelectDashboardTab && isGridMenuOpen && (
+        <div className="border-t border-slate-800/90 bg-slate-950/98 px-2 sm:px-6 py-2 transition-all shadow-inner">
+          <div className="max-w-7xl mx-auto">
+            {/* Grid Cantik Minimalis: 4 kolom di layar HP (2 baris x 4 modul), 8 kolom di layar tablet/desktop */}
+            <div className="grid grid-cols-4 md:grid-cols-8 gap-1.5 sm:gap-2">
+              {navModules.map((item) => {
+                const isActive = activeDashboardTab === item.id;
+                const IconComponent = item.icon;
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => onSelectDashboardTab(item.id)}
+                    title={item.label}
+                    className={`group relative flex flex-col items-center justify-center p-1.5 sm:py-2 sm:px-2 rounded-xl text-center transition-all duration-150 active:scale-95 ${
+                      isActive
+                        ? 'bg-emerald-600 text-white font-bold shadow-md shadow-emerald-950/50 border border-emerald-400/60 ring-1 ring-emerald-400/30'
+                        : 'bg-slate-900/80 hover:bg-slate-800/90 text-slate-300 hover:text-white border border-slate-800/80 hover:border-slate-700'
+                    }`}
+                  >
+                    {/* Top Row: Icon + Mini Counter */}
+                    <div className="flex items-center justify-center gap-1 mb-1 relative">
+                      <IconComponent
+                        className={`w-4 h-4 transition-transform group-hover:scale-110 ${
+                          isActive ? 'text-white' : item.accentColor
+                        }`}
+                      />
+                      {item.count !== undefined && (
+                        <span
+                          className={`text-[9px] font-mono px-1 py-0.2 rounded-full font-bold leading-none ${
+                            isActive
+                              ? 'bg-white/25 text-white'
+                              : 'bg-slate-800 text-slate-300 border border-slate-700'
+                          }`}
+                        >
+                          {item.count}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Short Label */}
+                    <span className="text-[10px] sm:text-[11px] leading-tight font-semibold tracking-tight truncate w-full block">
+                      {item.shortLabel}
+                    </span>
+
+                    {/* Subtle Active Glow Marker */}
+                    {isActive && (
+                      <span className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-4 sm:w-6 h-0.5 bg-amber-300 rounded-full" />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
     </header>
   );
 };
