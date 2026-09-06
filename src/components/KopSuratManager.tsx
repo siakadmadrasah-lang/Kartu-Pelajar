@@ -68,12 +68,40 @@ export const KopSuratManager: React.FC<KopSuratManagerProps> = ({
   const logoKiriInputRef = useRef<HTMLInputElement>(null);
   const logoKananInputRef = useRef<HTMLInputElement>(null);
 
-  // Update helper
+  // Update helper with preset & logo visibility synchronization
   const handleUpdate = (field: keyof KopSuratConfig, value: any) => {
-    const updated = {
+    let updated = {
       ...kopConfig,
       [field]: value,
     };
+
+    if (field === 'layoutPreset') {
+      const preset = value as KopSuratLayoutPreset;
+      if (preset === 'dua-logo') {
+        updated.showLogoKiri = true;
+        updated.showLogoKanan = true;
+      } else if (preset === 'logo-kiri' || preset === 'logo-tengah') {
+        updated.showLogoKiri = true;
+        updated.showLogoKanan = false;
+      } else if (preset === 'logo-kanan') {
+        updated.showLogoKiri = false;
+        updated.showLogoKanan = true;
+      } else if (preset === 'tanpa-logo') {
+        updated.showLogoKiri = false;
+        updated.showLogoKanan = false;
+      }
+    } else if (field === 'showLogoKiri') {
+      const nextKiri = Boolean(value);
+      const nextKanan = kopConfig.showLogoKanan;
+      updated.showLogoKiri = nextKiri;
+      updated.layoutPreset = nextKiri && nextKanan ? 'dua-logo' : nextKiri ? 'logo-kiri' : nextKanan ? 'logo-kanan' : 'tanpa-logo';
+    } else if (field === 'showLogoKanan') {
+      const nextKiri = kopConfig.showLogoKiri;
+      const nextKanan = Boolean(value);
+      updated.showLogoKanan = nextKanan;
+      updated.layoutPreset = nextKiri && nextKanan ? 'dua-logo' : nextKiri ? 'logo-kiri' : nextKanan ? 'logo-kanan' : 'tanpa-logo';
+    }
+
     onChange(updated);
   };
 
@@ -128,11 +156,27 @@ export const KopSuratManager: React.FC<KopSuratManagerProps> = ({
       const optimizedBase64 = await compressLogoOrGraphic(file, 512);
 
       if (side === 'kiri') {
-        handleUpdate('logoKiriUrl', optimizedBase64);
-        handleUpdate('showLogoKiri', true);
+        const nextKiri = true;
+        const nextKanan = kopConfig.showLogoKanan;
+        const nextPreset: KopSuratLayoutPreset = nextKanan ? 'dua-logo' : 'logo-kiri';
+        const updated: KopSuratConfig = {
+          ...kopConfig,
+          logoKiriUrl: optimizedBase64,
+          showLogoKiri: nextKiri,
+          layoutPreset: nextPreset,
+        };
+        onChange(updated);
       } else {
-        handleUpdate('logoKananUrl', optimizedBase64);
-        handleUpdate('showLogoKanan', true);
+        const nextKiri = kopConfig.showLogoKiri;
+        const nextKanan = true;
+        const nextPreset: KopSuratLayoutPreset = nextKiri ? 'dua-logo' : 'logo-kanan';
+        const updated: KopSuratConfig = {
+          ...kopConfig,
+          logoKananUrl: optimizedBase64,
+          showLogoKanan: nextKanan,
+          layoutPreset: nextPreset,
+        };
+        onChange(updated);
       }
 
       setSaveFeedback(`✓ Logo ${side === 'kiri' ? 'Kiri' : 'Kanan'} berhasil diunggah!`);
@@ -264,9 +308,9 @@ export const KopSuratManager: React.FC<KopSuratManagerProps> = ({
     printWindow.document.close();
   };
 
-  // Active logo URLs with fallback to madrasah
-  const activeLogoKiri = kopConfig.logoKiriUrl || madrasah.logoKemenagUrl || '';
-  const activeLogoKanan = kopConfig.logoKananUrl || madrasah.logoMadrasahUrl || '';
+  // Active logo URLs with fallback to madrasah (seragam untuk kop surat & kop kartu)
+  const activeLogoKiri = kopConfig.logoKiriUrl || madrasah.logoKiriUrl || madrasah.logoKemenagUrl || '';
+  const activeLogoKanan = kopConfig.logoKananUrl || madrasah.logoKananUrl || madrasah.logoMadrasahUrl || '';
 
   return (
     <div className="space-y-4">
@@ -627,6 +671,10 @@ export const KopSuratManager: React.FC<KopSuratManagerProps> = ({
                 <p className="text-[11px] text-slate-400">
                   Pilih konfigurasi logo yang sesuai: 2 logo (standar Kemenag), 1 logo kiri, atau 1 logo kanan.
                 </p>
+                <div className="mt-2 text-[11px] text-emerald-300 font-medium bg-emerald-950/70 p-2.5 rounded-xl border border-emerald-500/40 flex items-center gap-2 shadow-sm">
+                  <Sparkles className="w-4 h-4 text-amber-400 flex-shrink-0" />
+                  <span>Pengaturan logo kiri dan kanan (baik aktif, non-aktif, maupun unggah logo) otomatis berlaku serempak untuk Kop Surat dan Kop Kartu Pelajar.</span>
+                </div>
               </div>
 
               {/* Preset Layout Selector */}

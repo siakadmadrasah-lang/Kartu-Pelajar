@@ -8,6 +8,7 @@ import {
   ActivityLog,
   PageLoaderConfig,
   KopSuratConfig,
+  KopSuratLayoutPreset,
   DashboardTab
 } from './types';
 import { 
@@ -1402,6 +1403,28 @@ export default function App() {
     if (finalConfig) {
       setCardConfig(finalConfig);
     }
+
+    // Sinkronkan gambar logo kiri & logo kanan madrasah ke Kop Surat
+    let syncedKop = kopConfig;
+    const effectiveLogoKiri = updated.logoKiriUrl || updated.logoKemenagUrl;
+    const effectiveLogoKanan = updated.logoKananUrl || updated.logoMadrasahUrl;
+    let kopLogoChanged = false;
+    if (effectiveLogoKiri && effectiveLogoKiri !== kopConfig.logoKiriUrl) {
+      syncedKop = { ...syncedKop, logoKiriUrl: effectiveLogoKiri };
+      kopLogoChanged = true;
+    }
+    if (effectiveLogoKanan && effectiveLogoKanan !== kopConfig.logoKananUrl) {
+      syncedKop = { ...syncedKop, logoKananUrl: effectiveLogoKanan };
+      kopLogoChanged = true;
+    }
+    if (kopLogoChanged) {
+      setKopConfig(syncedKop);
+      try {
+        localStorage.setItem('mi_kop_surat_config', JSON.stringify(syncedKop));
+      } catch (e) {}
+      setPersistentItem('mi_kop_surat_config', syncedKop).catch(() => {});
+    }
+
     setSyncStatus('saving');
     
     // 1. Immediately write to persistent IndexedDB storage & LocalStorage & Vault
@@ -1415,7 +1438,15 @@ export default function App() {
     try {
       if (typeof BroadcastChannel !== 'undefined') {
         const bc = new BroadcastChannel('mi_realtime_channel');
-        bc.postMessage({ type: 'local_sync', payload: { madrasah: updated, cardConfig: finalConfig }, timestamp: editTime });
+        bc.postMessage({ 
+          type: 'local_sync', 
+          payload: { 
+            madrasah: updated, 
+            cardConfig: finalConfig,
+            ...(kopLogoChanged ? { kopSuratConfig: syncedKop } : {})
+          }, 
+          timestamp: editTime 
+        });
         bc.close();
       }
     } catch (e) {}
@@ -1426,6 +1457,7 @@ export default function App() {
         madrasah: updated,
         students: studentsRef.current,
         cardConfig: finalConfig,
+        ...(kopLogoChanged ? { kopSuratConfig: syncedKop } : {}),
         loaderConfig,
         activityLogs,
       });
@@ -1515,10 +1547,41 @@ export default function App() {
       localStorage.setItem('mi_card_config', JSON.stringify(updated));
     } catch (e) {}
     setCardConfig(updated);
+
+    // SINKRONISASI PENGATURAN LOGO KE KOP SURAT:
+    // Pengaturan logo baik kanan dan kiri baik aktif dan non aktif berlaku untuk kop surat dan kop kartu.
+    const isLeftActive = (updated.showKemenagLogo !== false) && updated.logoMode !== 'right_only' && updated.logoMode !== 'madrasah_only' && updated.logoMode !== 'none';
+    const isRightActive = (updated.showMadrasahLogo !== false) && updated.logoMode !== 'left_only' && updated.logoMode !== 'kemenag_only' && updated.logoMode !== 'none';
+    const nextKopPreset: KopSuratLayoutPreset = isLeftActive && isRightActive ? 'dua-logo' : isLeftActive ? 'logo-kiri' : isRightActive ? 'logo-kanan' : 'tanpa-logo';
+
+    let syncedKop = kopConfig;
+    let kopChanged = false;
+    if (kopConfig.showLogoKiri !== isLeftActive || kopConfig.showLogoKanan !== isRightActive || kopConfig.layoutPreset !== nextKopPreset) {
+      syncedKop = {
+        ...kopConfig,
+        showLogoKiri: isLeftActive,
+        showLogoKanan: isRightActive,
+        layoutPreset: nextKopPreset,
+      };
+      kopChanged = true;
+      setKopConfig(syncedKop);
+      try {
+        localStorage.setItem('mi_kop_surat_config', JSON.stringify(syncedKop));
+      } catch (e) {}
+      setPersistentItem('mi_kop_surat_config', syncedKop).catch(() => {});
+    }
+
     try {
       if (typeof BroadcastChannel !== 'undefined') {
         const bc = new BroadcastChannel('mi_realtime_channel');
-        bc.postMessage({ type: 'local_sync', payload: { cardConfig: updated }, timestamp: editTime });
+        bc.postMessage({ 
+          type: 'local_sync', 
+          payload: { 
+            cardConfig: updated,
+            ...(kopChanged ? { kopSuratConfig: syncedKop } : {})
+          }, 
+          timestamp: editTime 
+        });
         bc.close();
       }
     } catch (e) {}
@@ -1529,6 +1592,7 @@ export default function App() {
     try {
       const res = await saveCentralServerData({
         cardConfig: updated,
+        ...(kopChanged ? { kopSuratConfig: syncedKop } : {}),
         madrasah: madrasahRef.current,
         students: studentsRef.current,
       });
@@ -1587,7 +1651,31 @@ export default function App() {
       localStorage.setItem('mi_kop_surat_config', JSON.stringify(updated));
     } catch (e) {}
 
-    // Otomatis samakan Nama Kop Kartu Pelajar & Instansi dengan Kop Surat (Baris 3 & Baris 1)
+    // SINKRONISASI PENGATURAN LOGO KE KARTU PELAJAR:
+    // Pengaturan logo baik kanan dan kiri baik aktif dan non aktif berlaku untuk kop surat dan kop kartu.
+    const isLeftActive = updated.showLogoKiri !== false && updated.layoutPreset !== 'logo-kanan' && updated.layoutPreset !== 'tanpa-logo';
+    const isRightActive = updated.showLogoKanan !== false && updated.layoutPreset !== 'logo-kiri' && updated.layoutPreset !== 'tanpa-logo';
+    const nextLogoMode: 'both' | 'left_only' | 'right_only' | 'none' = isLeftActive && isRightActive ? 'both' : isLeftActive ? 'left_only' : isRightActive ? 'right_only' : 'none';
+
+    let syncedCardConfig = cardConfig;
+    let cardChanged = false;
+    if (cardConfig.showKemenagLogo !== isLeftActive || cardConfig.showMadrasahLogo !== isRightActive || cardConfig.logoMode !== nextLogoMode) {
+      syncedCardConfig = {
+        ...cardConfig,
+        showKemenagLogo: isLeftActive,
+        showMadrasahLogo: isRightActive,
+        logoMode: nextLogoMode,
+      };
+      cardChanged = true;
+      setCardConfig(syncedCardConfig);
+      cardConfigRef.current = syncedCardConfig;
+      try {
+        localStorage.setItem('mi_card_config', JSON.stringify(syncedCardConfig));
+      } catch (e) {}
+      setPersistentItem('mi_card_config', syncedCardConfig).catch(() => {});
+    }
+
+    // Otomatis samakan Nama Kop Kartu Pelajar & Instansi dengan Kop Surat (Baris 3 & Baris 1), dan Sinkronkan Logo
     const updatesToMadrasah: Record<string, string> = {};
     if (updated.baris3Madrasah && updated.baris3Madrasah.trim() !== '') {
       updatesToMadrasah.namaMadrasahKop = updated.baris3Madrasah;
@@ -1595,6 +1683,15 @@ export default function App() {
     if (updated.baris1Kementerian && updated.baris1Kementerian.trim() !== '') {
       updatesToMadrasah.namaKementerian = updated.baris1Kementerian;
     }
+    if (updated.logoKiriUrl && updated.logoKiriUrl !== madrasah.logoKiriUrl) {
+      updatesToMadrasah.logoKiriUrl = updated.logoKiriUrl;
+      updatesToMadrasah.logoKemenagUrl = updated.logoKiriUrl;
+    }
+    if (updated.logoKananUrl && updated.logoKananUrl !== madrasah.logoKananUrl) {
+      updatesToMadrasah.logoKananUrl = updated.logoKananUrl;
+      updatesToMadrasah.logoMadrasahUrl = updated.logoKananUrl;
+    }
+
     if (Object.keys(updatesToMadrasah).length > 0) {
       setMadrasah(prev => {
         const next = { ...prev, ...updatesToMadrasah };
@@ -1606,7 +1703,15 @@ export default function App() {
     try {
       if (typeof BroadcastChannel !== 'undefined') {
         const bc = new BroadcastChannel('mi_realtime_channel');
-        bc.postMessage({ type: 'local_sync', payload: { kopSuratConfig: updated }, timestamp: Date.now() });
+        bc.postMessage({ 
+          type: 'local_sync', 
+          payload: { 
+            kopSuratConfig: updated,
+            ...(cardChanged ? { cardConfig: syncedCardConfig } : {}),
+            ...(Object.keys(updatesToMadrasah).length > 0 ? { madrasah: { ...madrasah, ...updatesToMadrasah } } : {})
+          }, 
+          timestamp: Date.now() 
+        });
         bc.close();
       }
     } catch (e) {}
@@ -1614,6 +1719,7 @@ export default function App() {
     try {
       const res = await saveCentralServerData({ 
         kopSuratConfig: updated,
+        ...(cardChanged ? { cardConfig: syncedCardConfig } : {}),
         ...(Object.keys(updatesToMadrasah).length > 0 ? { madrasah: { ...madrasah, ...updatesToMadrasah } } : {})
       });
       if (res && res.lastUpdated) {

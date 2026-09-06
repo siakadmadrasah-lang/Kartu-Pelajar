@@ -200,10 +200,10 @@ export const DesignSettings: React.FC<DesignSettingsProps> = ({
         <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-slate-700">
           <div>
             <label className="block text-xs font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
-              <Sparkles className="w-4 h-4 text-amber-400" /> Fitur Aktifkan & Nonaktifkan Logo Kop Kartu
+              <Sparkles className="w-4 h-4 text-amber-400" /> Pengaturan Logo Kop Kartu & Kop Surat
             </label>
             <p className="text-[11px] text-slate-400 mt-0.5">
-              Atur status aktif atau nonaktif untuk logo sisi kiri dan logo sisi kanan header kartu pelajar.
+              Atur status aktif atau nonaktif untuk logo kiri dan kanan. Berlaku serempak untuk Kop Kartu Pelajar dan Kop Surat.
             </p>
           </div>
           <div className="flex items-center gap-1.5">

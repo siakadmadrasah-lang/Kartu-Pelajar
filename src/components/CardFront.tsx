@@ -39,20 +39,24 @@ export const CardFront: React.FC<CardFrontProps> = ({
   const namaKopKartu = effectiveKop?.baris3Madrasah || madrasah.namaMadrasahKop || madrasah.namaMadrasah;
   const namaInstansiKop = effectiveKop?.baris1Kementerian || madrasah.namaKementerian || madrasah.kemenagWilayah || 'KEMENTERIAN AGAMA REPUBLIK INDONESIA';
 
-  // Calculate logo visibility & source based on config.logoMode and singleLogoSource
-  // Determine if left (Kemenag) logo is active
-  const isLeftActive = (config.showKemenagLogo !== false) && config.logoMode !== 'right_only' && config.logoMode !== 'madrasah_only' && config.logoMode !== 'none';
-  // Determine if right (Madrasah) logo is active
-  const isRightActive = (config.showMadrasahLogo !== false) && config.logoMode !== 'left_only' && config.logoMode !== 'kemenag_only' && config.logoMode !== 'none';
+  // Calculate logo visibility & source based on config.logoMode and effectiveKop
+  // Pengaturan logo baik kanan dan kiri baik aktif dan non aktif berlaku untuk kop surat dan kop kartu.
+  const isLeftActiveByCard = (config.showKemenagLogo !== false) && config.logoMode !== 'right_only' && config.logoMode !== 'madrasah_only' && config.logoMode !== 'none';
+  const isLeftActiveByKop = effectiveKop ? (effectiveKop.showLogoKiri !== false && effectiveKop.layoutPreset !== 'logo-kanan' && effectiveKop.layoutPreset !== 'tanpa-logo') : true;
+  const isLeftActive = isLeftActiveByCard && isLeftActiveByKop;
+
+  const isRightActiveByCard = (config.showMadrasahLogo !== false) && config.logoMode !== 'left_only' && config.logoMode !== 'kemenag_only' && config.logoMode !== 'none';
+  const isRightActiveByKop = effectiveKop ? (effectiveKop.showLogoKanan !== false && effectiveKop.layoutPreset !== 'logo-kiri' && effectiveKop.layoutPreset !== 'tanpa-logo') : true;
+  const isRightActive = isRightActiveByCard && isRightActiveByKop;
 
   const showLeftLogo = isLeftActive;
   const showRightLogo = isRightActive;
 
-  // Determine what image to render on the left
+  // Determine what image to render on the left (seragam kop surat & kop kartu)
   const isLeftSingleMadrasah = config.logoMode === 'left_only' && config.singleLogoSource === 'madrasah';
   const leftLogoUrl = isLeftSingleMadrasah
-    ? (madrasah.logoMadrasahUrl || madrasah.logoAplikasiUrl)
-    : (madrasah.logoKemenagUrl || madrasah.logoAplikasiUrl);
+    ? (effectiveKop?.logoKananUrl || madrasah.logoKananUrl || madrasah.logoMadrasahUrl || madrasah.logoAplikasiUrl)
+    : (effectiveKop?.logoKiriUrl || madrasah.logoKiriUrl || madrasah.logoKemenagUrl || madrasah.logoAplikasiUrl);
   const renderLeftLogoComponent = () => {
     if (leftLogoUrl) {
       return (
@@ -71,11 +75,11 @@ export const CardFront: React.FC<CardFrontProps> = ({
     );
   };
 
-  // Determine what image to render on the right
+  // Determine what image to render on the right (seragam kop surat & kop kartu)
   const isRightSingleKemenag = config.logoMode === 'right_only' && config.singleLogoSource === 'kemenag';
   const rightLogoUrl = isRightSingleKemenag
-    ? (madrasah.logoKemenagUrl || madrasah.logoAplikasiUrl)
-    : (madrasah.logoMadrasahUrl || madrasah.logoAplikasiUrl);
+    ? (effectiveKop?.logoKiriUrl || madrasah.logoKiriUrl || madrasah.logoKemenagUrl || madrasah.logoAplikasiUrl)
+    : (effectiveKop?.logoKananUrl || madrasah.logoKananUrl || madrasah.logoMadrasahUrl || madrasah.logoAplikasiUrl);
   const renderRightLogoComponent = () => {
     if (rightLogoUrl) {
       return (

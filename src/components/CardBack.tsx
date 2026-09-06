@@ -79,16 +79,22 @@ export const CardBack: React.FC<CardBackProps> = ({
       <div className={`relative z-10 px-3 py-1.5 ${theme.headerBg} text-white flex items-center justify-between shadow-xs border-b ${theme.headerAccent}`}>
         <div className="flex items-center gap-1.5">
           {(() => {
-            const isLeftActive = (config.showKemenagLogo !== false) && config.logoMode !== 'right_only' && config.logoMode !== 'madrasah_only' && config.logoMode !== 'none';
-            const isRightActive = (config.showMadrasahLogo !== false) && config.logoMode !== 'left_only' && config.logoMode !== 'kemenag_only' && config.logoMode !== 'none';
+            // Pengaturan logo baik kanan dan kiri baik aktif dan non aktif berlaku untuk kop surat dan kop kartu.
+            const isLeftActiveByCard = (config.showKemenagLogo !== false) && config.logoMode !== 'right_only' && config.logoMode !== 'madrasah_only' && config.logoMode !== 'none';
+            const isLeftActiveByKop = effectiveKop ? (effectiveKop.showLogoKiri !== false && effectiveKop.layoutPreset !== 'logo-kanan' && effectiveKop.layoutPreset !== 'tanpa-logo') : true;
+            const isLeftActive = isLeftActiveByCard && isLeftActiveByKop;
+
+            const isRightActiveByCard = (config.showMadrasahLogo !== false) && config.logoMode !== 'left_only' && config.logoMode !== 'kemenag_only' && config.logoMode !== 'none';
+            const isRightActiveByKop = effectiveKop ? (effectiveKop.showLogoKanan !== false && effectiveKop.layoutPreset !== 'logo-kiri' && effectiveKop.layoutPreset !== 'tanpa-logo') : true;
+            const isRightActive = isRightActiveByCard && isRightActiveByKop;
 
             if (!isLeftActive && !isRightActive) return null;
 
             let chosenLogoUrl = '';
             if (isRightActive && (!isLeftActive || config.singleLogoSource === 'madrasah')) {
-              chosenLogoUrl = madrasah.logoMadrasahUrl || madrasah.logoAplikasiUrl || '';
+              chosenLogoUrl = effectiveKop?.logoKananUrl || madrasah.logoKananUrl || madrasah.logoMadrasahUrl || madrasah.logoAplikasiUrl || '';
             } else if (isLeftActive) {
-              chosenLogoUrl = madrasah.logoKemenagUrl || madrasah.logoAplikasiUrl || '';
+              chosenLogoUrl = effectiveKop?.logoKiriUrl || madrasah.logoKiriUrl || madrasah.logoKemenagUrl || madrasah.logoAplikasiUrl || '';
             }
 
             if (chosenLogoUrl) {

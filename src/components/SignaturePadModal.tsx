@@ -109,8 +109,11 @@ export const SignaturePadModal: React.FC<SignaturePadModalProps> = ({
     const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
     const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
 
-    const x = clientX - rect.left;
-    const y = clientY - rect.top;
+    const scaleX = rect.width > 0 ? canvas.width / rect.width : 1;
+    const scaleY = rect.height > 0 ? canvas.height / rect.height : 1;
+
+    const x = (clientX - rect.left) * scaleX;
+    const y = (clientY - rect.top) * scaleY;
 
     ctx.beginPath();
     ctx.moveTo(x, y);
@@ -131,8 +134,11 @@ export const SignaturePadModal: React.FC<SignaturePadModalProps> = ({
     const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
     const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
 
-    const x = clientX - rect.left;
-    const y = clientY - rect.top;
+    const scaleX = rect.width > 0 ? canvas.width / rect.width : 1;
+    const scaleY = rect.height > 0 ? canvas.height / rect.height : 1;
+
+    const x = (clientX - rect.left) * scaleX;
+    const y = (clientY - rect.top) * scaleY;
 
     ctx.lineTo(x, y);
     ctx.stroke();
@@ -344,33 +350,33 @@ export const SignaturePadModal: React.FC<SignaturePadModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] animate-in fade-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4">
+      <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col max-h-[96vh] sm:max-h-[92vh] animate-in fade-in zoom-in-95 duration-200">
         {/* Header */}
-        <div className="bg-gradient-to-r from-emerald-950 via-slate-900 to-teal-950 p-4 text-white flex items-center justify-between border-b border-slate-800">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 bg-emerald-600/30 text-emerald-400 rounded-lg">
+        <div className="bg-gradient-to-r from-emerald-950 via-slate-900 to-teal-950 p-3.5 sm:p-4 text-white flex items-center justify-between border-b border-slate-800">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="p-2 bg-emerald-600/30 text-emerald-400 rounded-lg shrink-0">
               <PenTool className="w-5 h-5" />
             </div>
-            <div>
-              <h3 className="text-sm font-bold uppercase tracking-wide">
+            <div className="min-w-0">
+              <h3 className="text-xs sm:text-sm font-bold uppercase tracking-wide truncate">
                 Pengaturan Penandatanganan & Stempel Digital
               </h3>
-              <p className="text-xs text-slate-400">
+              <p className="text-[11px] sm:text-xs text-slate-400 truncate">
                 Tanda tangan interaktif, stempel cap basah & legalitas pejabat penetap kartu
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800"
+            className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 shrink-0 ml-2"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Scrollable Content */}
-        <div className="p-5 space-y-5 overflow-y-auto flex-1 text-xs">
+        {/* Scrollable Content (Tanpa overflow ke samping di Android) */}
+        <div className="p-3 sm:p-5 space-y-4 overflow-y-auto overflow-x-hidden flex-1 text-xs">
           {/* Pejabat Penandatangan Form */}
           <div className="p-4 bg-slate-950/70 rounded-xl border border-slate-800 space-y-3">
             <h4 className="font-bold text-amber-300 flex items-center gap-1.5 uppercase tracking-wider text-[11px]">
@@ -492,62 +498,66 @@ export const SignaturePadModal: React.FC<SignaturePadModalProps> = ({
             </div>
           </div>
 
-          {/* Sub Navigation for Signature Mode */}
-          <div className="bg-slate-950/90 p-1 rounded-xl border border-slate-800 flex gap-1">
+          {/* Sub Navigation for Signature Mode - Grid Responsif Elegan & Ikonik (Tidak Melebar ke Samping) */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 p-1 bg-slate-950/90 rounded-xl border border-slate-800">
             <button
+              type="button"
               onClick={() => setActiveSubTab('draw')}
-              className={`flex-1 py-1.5 px-3 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 transition ${
+              className={`py-2 px-2 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 transition-all duration-150 active:scale-95 ${
                 activeSubTab === 'draw'
-                  ? 'bg-emerald-600 text-white'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                  ? 'bg-emerald-600 text-white shadow-md shadow-emerald-950/60 ring-1 ring-emerald-400/50'
+                  : 'bg-slate-900/80 text-slate-300 hover:text-white hover:bg-slate-800/90 border border-slate-800/80'
               }`}
             >
-              <PenTool className="w-3.5 h-3.5" />
-              <span>Gores Tanda Tangan (Canvas)</span>
+              <PenTool className={`w-3.5 h-3.5 shrink-0 ${activeSubTab === 'draw' ? 'text-white' : 'text-emerald-400'}`} />
+              <span className="truncate">Gores TTD</span>
             </button>
 
             <button
+              type="button"
               onClick={() => setActiveSubTab('presets')}
-              className={`flex-1 py-1.5 px-3 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 transition ${
+              className={`py-2 px-2 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 transition-all duration-150 active:scale-95 ${
                 activeSubTab === 'presets'
-                  ? 'bg-emerald-600 text-white'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                  ? 'bg-emerald-600 text-white shadow-md shadow-emerald-950/60 ring-1 ring-emerald-400/50'
+                  : 'bg-slate-900/80 text-slate-300 hover:text-white hover:bg-slate-800/90 border border-slate-800/80'
               }`}
             >
-              <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-              <span>Pilihan Template TTD</span>
+              <Sparkles className={`w-3.5 h-3.5 shrink-0 ${activeSubTab === 'presets' ? 'text-white' : 'text-amber-300'}`} />
+              <span className="truncate">Template TTD</span>
             </button>
 
             <button
+              type="button"
               onClick={() => setActiveSubTab('upload')}
-              className={`flex-1 py-1.5 px-3 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 transition ${
+              className={`py-2 px-2 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 transition-all duration-150 active:scale-95 ${
                 activeSubTab === 'upload'
-                  ? 'bg-emerald-600 text-white'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                  ? 'bg-emerald-600 text-white shadow-md shadow-emerald-950/60 ring-1 ring-emerald-400/50'
+                  : 'bg-slate-900/80 text-slate-300 hover:text-white hover:bg-slate-800/90 border border-slate-800/80'
               }`}
             >
-              <Upload className="w-3.5 h-3.5" />
-              <span>Unggah Berkas Gambar</span>
+              <Upload className={`w-3.5 h-3.5 shrink-0 ${activeSubTab === 'upload' ? 'text-white' : 'text-blue-400'}`} />
+              <span className="truncate">Unggah Gambar</span>
             </button>
 
             <button
+              type="button"
               onClick={() => setActiveSubTab('stamp')}
-              className={`flex-1 py-1.5 px-3 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 transition ${
+              className={`py-2 px-2 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 transition-all duration-150 active:scale-95 ${
                 activeSubTab === 'stamp'
-                  ? 'bg-emerald-600 text-white'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                  ? 'bg-emerald-600 text-white shadow-md shadow-emerald-950/60 ring-1 ring-emerald-400/50'
+                  : 'bg-slate-900/80 text-slate-300 hover:text-white hover:bg-slate-800/90 border border-slate-800/80'
               }`}
             >
-              <Stamp className="w-3.5 h-3.5 text-violet-400" />
-              <span>Stempel Cap Basah</span>
+              <Stamp className={`w-3.5 h-3.5 shrink-0 ${activeSubTab === 'stamp' ? 'text-white' : 'text-violet-400'}`} />
+              <span className="truncate">Stempel Basah</span>
             </button>
           </div>
 
           {/* TAB 1: DRAW CANVAS */}
           {activeSubTab === 'draw' && (
             <div className="space-y-3">
-              {/* Canvas Controls Bar */}
-              <div className="flex flex-wrap items-center justify-between gap-2 p-2 bg-slate-950/60 rounded-lg border border-slate-800">
+              {/* Canvas Controls Bar (Responsif di Layar HP) */}
+              <div className="flex flex-wrap items-center justify-between gap-2 p-2 sm:p-2.5 bg-slate-950/80 rounded-xl border border-slate-800">
                 {/* Pen Colors */}
                 <div className="flex items-center gap-1.5">
                   <span className="text-[11px] text-slate-400 font-medium">Tinta:</span>
@@ -559,10 +569,11 @@ export const SignaturePadModal: React.FC<SignaturePadModalProps> = ({
                   ].map((item) => (
                     <button
                       key={item.color}
+                      type="button"
                       onClick={() => setPenColor(item.color)}
                       style={{ backgroundColor: item.color }}
                       className={`w-6 h-6 rounded-full border-2 transition ${
-                        penColor === item.color ? 'border-amber-400 scale-110 shadow-sm' : 'border-slate-700 hover:scale-105'
+                        penColor === item.color ? 'border-amber-400 scale-110 shadow-sm ring-1 ring-amber-400/50' : 'border-slate-700 hover:scale-105'
                       }`}
                       title={item.label}
                     />
@@ -570,8 +581,8 @@ export const SignaturePadModal: React.FC<SignaturePadModalProps> = ({
                 </div>
 
                 {/* Stroke Width Slider */}
-                <div className="flex items-center gap-2">
-                  <span className="text-[11px] text-slate-400">Ketebalan:</span>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[11px] text-slate-400">Tebal:</span>
                   <input
                     type="range"
                     min="1.5"
@@ -579,24 +590,27 @@ export const SignaturePadModal: React.FC<SignaturePadModalProps> = ({
                     step="0.5"
                     value={penWidth}
                     onChange={(e) => setPenWidth(parseFloat(e.target.value))}
-                    className="w-20 accent-emerald-500 cursor-pointer"
+                    className="w-16 sm:w-20 accent-emerald-500 cursor-pointer"
                   />
-                  <span className="text-[10px] font-mono text-slate-300 w-6">{penWidth}px</span>
+                  <span className="text-[10px] font-mono text-slate-300 w-5">{penWidth}</span>
                 </div>
 
                 {/* Canvas Action Buttons */}
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-1.5 ml-auto sm:ml-0">
                   <button
+                    type="button"
                     onClick={handleUndo}
                     disabled={strokeHistory.length === 0}
-                    className="p-1.5 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-slate-300 rounded-lg transition"
+                    className="p-1.5 sm:px-2 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-slate-300 rounded-lg transition text-xs font-semibold flex items-center gap-1"
                     title="Urungkan Goresan Terakhir"
                   >
                     <RotateCcw className="w-3.5 h-3.5" />
+                    <span className="hidden xs:inline">Undo</span>
                   </button>
                   <button
+                    type="button"
                     onClick={handleClearCanvas}
-                    className="px-2.5 py-1.5 bg-rose-950/60 hover:bg-rose-900 text-rose-300 border border-rose-800/80 rounded-lg font-medium flex items-center gap-1 transition"
+                    className="px-2.5 py-1.5 bg-rose-950/60 hover:bg-rose-900 text-rose-300 border border-rose-800/80 rounded-lg text-xs font-semibold flex items-center gap-1 transition active:scale-95"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                     <span>Bersihkan</span>
@@ -605,7 +619,7 @@ export const SignaturePadModal: React.FC<SignaturePadModalProps> = ({
               </div>
 
               {/* The Interactive Drawing Canvas */}
-              <div className="relative bg-white rounded-xl border-2 border-dashed border-emerald-500/60 shadow-inner flex flex-col items-center justify-center p-2">
+              <div className="relative bg-white rounded-xl border-2 border-dashed border-emerald-500/60 shadow-inner flex flex-col items-center justify-center p-1 sm:p-2 w-full max-w-full overflow-hidden">
                 <canvas
                   ref={canvasRef}
                   width={480}
@@ -617,17 +631,17 @@ export const SignaturePadModal: React.FC<SignaturePadModalProps> = ({
                   onTouchStart={startDrawing}
                   onTouchMove={draw}
                   onTouchEnd={stopDrawing}
-                  className="w-full max-w-[480px] h-[150px] cursor-crosshair touch-none bg-transparent"
+                  className="w-full max-w-full h-[140px] sm:h-[150px] cursor-crosshair touch-none bg-transparent block"
                 />
 
                 {!hasDrawn && strokeHistory.length === 0 && (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-slate-400">
-                    <PenTool className="w-6 h-6 mb-1 opacity-50 text-emerald-600" />
-                    <span className="font-semibold text-xs text-slate-600">
-                      Sentuh atau gunakan kursor mouse untuk membuat tanda tangan
+                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-slate-400 p-2 text-center select-none">
+                    <PenTool className="w-6 h-6 mb-1 opacity-40 text-emerald-600" />
+                    <span className="font-semibold text-[11px] sm:text-xs text-slate-600">
+                      Sentuh atau gunakan jari / mouse untuk membuat tanda tangan
                     </span>
-                    <span className="text-[10px] text-slate-400">
-                      Goresan akan otomatis diubah menjadi grafik transparan resolusi tinggi
+                    <span className="text-[9px] sm:text-[10px] text-slate-400">
+                      Goresan otomatis diubah transparan resolusi tinggi
                     </span>
                   </div>
                 )}
@@ -959,20 +973,22 @@ export const SignaturePadModal: React.FC<SignaturePadModalProps> = ({
           </div>
         </div>
 
-        {/* Footer Actions */}
-        <div className="p-4 bg-slate-950 border-t border-slate-800 flex items-center justify-between">
+        {/* Footer Actions (Responsif di Layar HP) */}
+        <div className="p-3 sm:p-4 bg-slate-950 border-t border-slate-800 flex items-center justify-between gap-2">
           <button
+            type="button"
             onClick={onClose}
-            className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-semibold"
+            className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold transition active:scale-95 shrink-0"
           >
             Batal
           </button>
 
           <button
+            type="button"
             onClick={handleSaveAll}
-            className="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-md transition active:scale-95"
+            className="flex-1 sm:flex-initial px-4 sm:px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-md shadow-emerald-950/60 transition active:scale-95"
           >
-            <Check className="w-4 h-4" />
+            <Check className="w-4 h-4 shrink-0" />
             <span>Simpan & Terapkan ke Kartu</span>
           </button>
         </div>
