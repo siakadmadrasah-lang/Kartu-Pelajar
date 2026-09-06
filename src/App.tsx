@@ -1583,10 +1583,17 @@ export default function App() {
       localStorage.setItem('mi_kop_surat_config', JSON.stringify(updated));
     } catch (e) {}
 
-    // Otomatis samakan Nama Kop Kartu Pelajar dengan Nama Kop Surat (Baris 3)
+    // Otomatis samakan Nama Kop Kartu Pelajar & Instansi dengan Kop Surat (Baris 3 & Baris 1)
+    const updatesToMadrasah: Record<string, string> = {};
     if (updated.baris3Madrasah && updated.baris3Madrasah.trim() !== '') {
+      updatesToMadrasah.namaMadrasahKop = updated.baris3Madrasah;
+    }
+    if (updated.baris1Kementerian && updated.baris1Kementerian.trim() !== '') {
+      updatesToMadrasah.namaKementerian = updated.baris1Kementerian;
+    }
+    if (Object.keys(updatesToMadrasah).length > 0) {
       setMadrasah(prev => {
-        const next = { ...prev, namaMadrasahKop: updated.baris3Madrasah };
+        const next = { ...prev, ...updatesToMadrasah };
         setPersistentItem('mi_madrasah_info', next).catch(() => {});
         return next;
       });
@@ -1603,7 +1610,7 @@ export default function App() {
     try {
       const res = await saveCentralServerData({ 
         kopSuratConfig: updated,
-        ...(updated.baris3Madrasah ? { madrasah: { ...madrasah, namaMadrasahKop: updated.baris3Madrasah } } : {})
+        ...(Object.keys(updatesToMadrasah).length > 0 ? { madrasah: { ...madrasah, ...updatesToMadrasah } } : {})
       });
       if (res && res.lastUpdated) {
         setLastServerUpdate(res.lastUpdated);

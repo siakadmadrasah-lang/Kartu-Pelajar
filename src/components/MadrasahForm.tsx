@@ -237,80 +237,11 @@ export const MadrasahForm: React.FC<MadrasahFormProps> = ({
       {/* Identitas Utama */}
       <div className="bg-slate-800/80 p-4 rounded-xl border border-slate-700/80 space-y-3 shadow-sm">
         <h4 className="text-xs font-bold text-amber-300 uppercase tracking-wider flex items-center justify-between">
-          <span>Data Pokok Lembaga & Header Instansi</span>
+          <span>Data Pokok Lembaga</span>
           <span className="text-[10px] text-emerald-400 font-semibold lowercase">Bisa diedit bebas</span>
         </h4>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {/* EDIT NAMA KEMENTERIAN / INSTANSI INDUK */}
-          <div className="md:col-span-2 bg-slate-900/90 p-3.5 rounded-xl border border-amber-500/30 space-y-2.5">
-            <div className="flex flex-wrap items-center justify-between gap-2 pb-1 border-b border-slate-800">
-              <div>
-                <label className="block text-xs font-bold text-amber-300 flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
-                  Nama Kementerian / Instansi Induk (Baris 1 Kop Kartu Pelajar) *
-                </label>
-                <span className="text-[10px] text-slate-400">Header Tingkat Pusat / Yayasan pada Kartu Pelajar</span>
-              </div>
-
-              {/* Status & Toggle On/Off Nama Kementerian di Kartu */}
-              {config && onConfigChange && (
-                <div className="flex flex-wrap items-center gap-2">
-                  {/* Toggle untuk Kop Kartu */}
-                  <button
-                    type="button"
-                    onClick={() => onConfigChange({ ...config, showNamaKementerian: !(config.showNamaKementerian ?? true) })}
-                    className={`text-[10px] font-bold px-2.5 py-1 rounded-lg border transition flex items-center gap-1.5 shadow-sm ${
-                      (config.showNamaKementerian ?? true)
-                        ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/50 hover:bg-emerald-500/30'
-                        : 'bg-slate-800/80 text-slate-400 border-slate-700 hover:bg-slate-700'
-                    }`}
-                    title="Klik untuk aktifkan / nonaktifkan nama kementerian pada kop kartu pelajar"
-                  >
-                    <CreditCard className="w-3 h-3 text-emerald-400" />
-                    <span className={`w-1.5 h-1.5 rounded-full ${(config.showNamaKementerian ?? true) ? 'bg-emerald-400' : 'bg-slate-500'}`} />
-                    <span>{(config.showNamaKementerian ?? true) ? 'Kop Kartu: Aktif' : 'Kop Kartu: Nonaktif'}</span>
-                  </button>
-                </div>
-              )}
-            </div>
-            <input
-              type="text"
-              value={madrasah.namaKementerian ?? ''}
-              onChange={(e) => handleFieldChange('namaKementerian', e.target.value)}
-              placeholder="KEMENTERIAN AGAMA REPUBLIK INDONESIA"
-              className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-amber-200 font-bold focus:outline-none focus:border-amber-400 tracking-wide"
-            />
-            {/* Quick Presets for Kementerian / Instansi */}
-            <div className="flex flex-wrap items-center gap-1.5 pt-1">
-              <span className="text-[10px] text-slate-400 font-medium">Pilihan Cepat:</span>
-              {[
-                'KEMENTERIAN AGAMA REPUBLIK INDONESIA',
-                'KEMENTERIAN PENDIDIKAN, KEBUDAYAAN, RISET, DAN TEKNOLOGI',
-                'YAYASAN PENDIDIKAN ISLAM',
-                'LEMBAGA PENDIDIKAN MA\'ARIF NU',
-                'MAJELIS DIKDASMEN MUHAMMADIYAH',
-                'DINAS PENDIDIKAN DAN KEBUDAYAAN'
-              ].map((preset) => (
-                <button
-                  key={preset}
-                  type="button"
-                  onClick={() => {
-                    handleFieldChange('namaKementerian', preset);
-                    if (onSave) onSave({ ...madrasah, namaKementerian: preset });
-                  }}
-                  className={`text-[10px] px-2 py-0.5 rounded border transition ${
-                    (madrasah.namaKementerian || 'KEMENTERIAN AGAMA REPUBLIK INDONESIA') === preset
-                      ? 'bg-amber-500/20 border-amber-400 text-amber-300 font-bold'
-                      : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-slate-200'
-                  }`}
-                >
-                  {preset.length > 30 ? preset.slice(0, 27) + '...' : preset}
-                </button>
-              ))}
-            </div>
-          </div>
-
           {/* 1. NAMA MADRASAH UTAMA (MASTER & SATUAN PENDIDIKAN) */}
           <div className="md:col-span-2 space-y-2 p-3.5 bg-slate-950/80 rounded-xl border border-slate-700/80 shadow-sm">
             <div className="flex items-center justify-between mb-1">
