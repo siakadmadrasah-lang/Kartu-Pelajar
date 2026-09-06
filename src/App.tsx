@@ -1582,6 +1582,16 @@ export default function App() {
     try {
       localStorage.setItem('mi_kop_surat_config', JSON.stringify(updated));
     } catch (e) {}
+
+    // Otomatis samakan Nama Kop Kartu Pelajar dengan Nama Kop Surat (Baris 3)
+    if (updated.baris3Madrasah && updated.baris3Madrasah.trim() !== '') {
+      setMadrasah(prev => {
+        const next = { ...prev, namaMadrasahKop: updated.baris3Madrasah };
+        setPersistentItem('mi_madrasah_info', next).catch(() => {});
+        return next;
+      });
+    }
+
     try {
       if (typeof BroadcastChannel !== 'undefined') {
         const bc = new BroadcastChannel('mi_realtime_channel');
@@ -1591,7 +1601,10 @@ export default function App() {
     } catch (e) {}
     setSyncStatus('saving');
     try {
-      const res = await saveCentralServerData({ kopSuratConfig: updated });
+      const res = await saveCentralServerData({ 
+        kopSuratConfig: updated,
+        ...(updated.baris3Madrasah ? { madrasah: { ...madrasah, namaMadrasahKop: updated.baris3Madrasah } } : {})
+      });
       if (res && res.lastUpdated) {
         setLastServerUpdate(res.lastUpdated);
         lastKnownServerTimeRef.current = res.lastUpdated;
@@ -2176,6 +2189,7 @@ export default function App() {
                   }}
                   madrasah={madrasah}
                   config={cardConfig}
+                  kopConfig={kopConfig}
                 />
               </div>
             </div>
@@ -2447,6 +2461,7 @@ export default function App() {
         students={students}
         madrasah={madrasah}
         config={cardConfig}
+        kopConfig={kopConfig}
         initialSelectedStudentIds={printTargetStudentIds}
       />
 

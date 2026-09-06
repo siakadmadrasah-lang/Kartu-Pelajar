@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { CardConfig, MadrasahInfo, Student } from '../types';
+import { CardConfig, MadrasahInfo, Student, KopSuratConfig } from '../types';
 import { CardFront } from './CardFront';
 import { CardBack } from './CardBack';
 import { downloadCardElementAsPng, generateSingleStudentPdf } from '../utils/exportUtils';
@@ -15,6 +15,7 @@ interface Card3DPreviewProps {
   student: Student;
   madrasah: MadrasahInfo;
   config: CardConfig;
+  kopConfig?: KopSuratConfig;
   onOpenScanner?: () => void;
   onOpenPrintSheet?: () => void;
 }
@@ -23,6 +24,7 @@ export const Card3DPreview: React.FC<Card3DPreviewProps> = ({
   student,
   madrasah,
   config,
+  kopConfig,
 }) => {
   const [isFlipped, setIsFlipped] = useState(false);
   const [viewMode, setViewMode] = useState<'single-3d' | 'side-by-side'>('single-3d');
@@ -230,6 +232,7 @@ export const Card3DPreview: React.FC<Card3DPreviewProps> = ({
                       student={student}
                       madrasah={madrasah}
                       config={config}
+                      kopConfig={kopConfig}
                       elementId="card-front-interactive"
                     />
                   </div>
@@ -250,6 +253,7 @@ export const Card3DPreview: React.FC<Card3DPreviewProps> = ({
                       student={student}
                       madrasah={madrasah}
                       config={config}
+                      kopConfig={kopConfig}
                       elementId="card-back-interactive"
                     />
                   </div>
@@ -294,6 +298,7 @@ export const Card3DPreview: React.FC<Card3DPreviewProps> = ({
                     student={student}
                     madrasah={madrasah}
                     config={config}
+                    kopConfig={kopConfig}
                     elementId="card-front-interactive"
                   />
                 </div>
@@ -325,6 +330,7 @@ export const Card3DPreview: React.FC<Card3DPreviewProps> = ({
                     student={student}
                     madrasah={madrasah}
                     config={config}
+                    kopConfig={kopConfig}
                     elementId="card-back-interactive"
                   />
                 </div>
@@ -340,12 +346,14 @@ export const Card3DPreview: React.FC<Card3DPreviewProps> = ({
           student={student}
           madrasah={madrasah}
           config={config}
+          kopConfig={kopConfig}
           elementId="card-front-export-target"
         />
         <CardBack
           student={student}
           madrasah={madrasah}
           config={config}
+          kopConfig={kopConfig}
           elementId="card-back-export-target"
         />
       </div>

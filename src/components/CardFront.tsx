@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { CardConfig, MadrasahInfo, Student } from '../types';
+import { CardConfig, MadrasahInfo, Student, KopSuratConfig } from '../types';
 import { THEME_CONFIGS } from '../constants/initialData';
 import { BarcodeSvg, HologramBadge, IslamicWatermark, KemenagLogo, MadrasahLogo } from './Logos';
 import { generateQrDataUrl, buildVCardString } from '../utils/exportUtils';
@@ -9,6 +9,7 @@ interface CardFrontProps {
   student: Student;
   madrasah: MadrasahInfo;
   config: CardConfig;
+  kopConfig?: KopSuratConfig;
   elementId?: string;
   scale?: number;
 }
@@ -17,12 +18,26 @@ export const CardFront: React.FC<CardFrontProps> = ({
   student,
   madrasah,
   config,
+  kopConfig,
   elementId = 'card-front-preview',
   scale = 1
 }) => {
   const [qrCodeUrl, setQrCodeUrl] = useState<string>('');
   const theme = THEME_CONFIGS[config.theme] || THEME_CONFIGS['kemenag-green'];
   const isLandscape = config.orientation === 'landscape';
+
+  // Nama Kop Kartu Pelajar disamakan dengan Kop Surat:
+  // Mengutamakan Baris 3 (Nama Madrasah Kop Surat) dan Baris 1 (Instansi/Kementerian)
+  const effectiveKop = kopConfig || (() => {
+    try {
+      const cached = localStorage.getItem('mi_kop_surat_config');
+      if (cached) return JSON.parse(cached);
+    } catch (e) {}
+    return null;
+  })();
+
+  const namaKopKartu = effectiveKop?.baris3Madrasah || madrasah.namaMadrasahKop || madrasah.namaMadrasah;
+  const namaInstansiKop = effectiveKop?.baris1Kementerian || madrasah.namaKementerian || madrasah.kemenagWilayah || 'KEMENTERIAN AGAMA REPUBLIK INDONESIA';
 
   // Calculate logo visibility & source based on config.logoMode and singleLogoSource
   // Determine if left (Kemenag) logo is active
@@ -129,11 +144,11 @@ export const CardFront: React.FC<CardFrontProps> = ({
         <div className="flex-1 text-center px-2 min-w-0">
           {(config.showNamaKementerian ?? true) && (
             <p className="text-[7.5px] font-bold tracking-wider text-amber-200 uppercase leading-tight truncate">
-              {madrasah.namaKementerian || madrasah.kemenagWilayah || 'KEMENTERIAN AGAMA REPUBLIK INDONESIA'}
+              {namaInstansiKop}
             </p>
           )}
           <h2 className="text-[11.5px] font-extrabold tracking-wide uppercase text-white leading-tight font-sans drop-shadow-sm truncate">
-            {madrasah.namaMadrasahKop || madrasah.namaMadrasah}
+            {namaKopKartu}
           </h2>
           <div className="flex items-center justify-center gap-1.5 text-[6.8px] text-emerald-100/90 font-medium leading-none mt-0.5">
             <span>NSM: <strong className="text-amber-300 font-mono">{madrasah.nsm}</strong></span>

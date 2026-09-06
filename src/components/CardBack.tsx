@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { CardConfig, MadrasahInfo, Student } from '../types';
+import { CardConfig, MadrasahInfo, Student, KopSuratConfig } from '../types';
 import { BACK_CONTENT_PRESETS, THEME_CONFIGS } from '../constants/initialData';
 import { IslamicWatermark, KemenagLogo, MadrasahLogo, OfficialStamp, PrincipalSignature } from './Logos';
 import { generateQrDataUrl, buildVCardString } from '../utils/exportUtils';
@@ -9,6 +9,7 @@ interface CardBackProps {
   student: Student;
   madrasah: MadrasahInfo;
   config: CardConfig;
+  kopConfig?: KopSuratConfig;
   elementId?: string;
   scale?: number;
 }
@@ -17,12 +18,24 @@ export const CardBack: React.FC<CardBackProps> = ({
   student,
   madrasah,
   config,
+  kopConfig,
   elementId = 'card-back-preview',
   scale = 1
 }) => {
   const [qrCodeUrl, setQrCodeUrl] = useState<string>('');
   const theme = THEME_CONFIGS[config.theme] || THEME_CONFIGS['kemenag-green'];
   const isLandscape = config.orientation === 'landscape';
+
+  // Nama Kop Kartu Pelajar disamakan dengan Kop Surat:
+  const effectiveKop = kopConfig || (() => {
+    try {
+      const cached = localStorage.getItem('mi_kop_surat_config');
+      if (cached) return JSON.parse(cached);
+    } catch (e) {}
+    return null;
+  })();
+
+  const namaKopKartu = effectiveKop?.baris3Madrasah || madrasah.namaMadrasahKop || madrasah.namaMadrasah;
 
   const presetData = BACK_CONTENT_PRESETS[config.backContentPreset] || BACK_CONTENT_PRESETS['tata-tertib'];
   const title = config.backContentPreset === 'custom' ? config.customBackTitle : presetData.title;
@@ -95,7 +108,7 @@ export const CardBack: React.FC<CardBackProps> = ({
             ) : null;
           })()}
           <span className="text-[9px] font-bold tracking-wider text-amber-300 uppercase truncate max-w-[280px]">
-            {madrasah.namaMadrasahKop || madrasah.namaMadrasah}
+            {namaKopKartu}
           </span>
         </div>
         <span className="text-[7.5px] font-semibold text-emerald-100 uppercase tracking-wider font-mono">

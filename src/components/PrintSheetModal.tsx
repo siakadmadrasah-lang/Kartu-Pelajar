@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef } from 'react';
-import { CardConfig, MadrasahInfo, Student } from '../types';
+import { CardConfig, MadrasahInfo, Student, KopSuratConfig } from '../types';
 import { CardFront } from './CardFront';
 import { CardBack } from './CardBack';
 import { 
@@ -33,6 +33,7 @@ interface PrintSheetModalProps {
   students: Student[];
   madrasah: MadrasahInfo;
   config: CardConfig;
+  kopConfig?: KopSuratConfig;
   initialSelectedStudentIds?: string[];
 }
 
@@ -44,6 +45,7 @@ export const PrintSheetModal: React.FC<PrintSheetModalProps> = ({
   students,
   madrasah,
   config,
+  kopConfig,
   initialSelectedStudentIds,
 }) => {
   // Student selection state
@@ -898,6 +900,7 @@ export const PrintSheetModal: React.FC<PrintSheetModalProps> = ({
                                     student={student}
                                     madrasah={madrasah}
                                     config={config}
+                                    kopConfig={kopConfig}
                                     elementId={`sheet-${student.id}-front-${pageIdx}-${slotIdx}`}
                                     scale={cardScale}
                                   />
@@ -906,6 +909,7 @@ export const PrintSheetModal: React.FC<PrintSheetModalProps> = ({
                                     student={student}
                                     madrasah={madrasah}
                                     config={config}
+                                    kopConfig={kopConfig}
                                     elementId={`sheet-${student.id}-back-${pageIdx}-${slotIdx}`}
                                     scale={cardScale}
                                   />

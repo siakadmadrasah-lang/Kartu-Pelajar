@@ -335,69 +335,7 @@ export const MadrasahForm: React.FC<MadrasahFormProps> = ({
             </p>
           </div>
 
-          {/* 2. SEKSI TERPISAH: NAMA KOP KARTU PELAJAR */}
-          <div className="md:col-span-2 space-y-2.5 p-4 bg-gradient-to-br from-amber-950/30 via-slate-950/80 to-slate-950/90 rounded-xl border border-amber-500/40 shadow-sm">
-            <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-amber-500/20">
-              <div className="flex items-center gap-2">
-                <div className="p-1.5 bg-amber-500/10 rounded-lg border border-amber-500/30 text-amber-400">
-                  <CreditCard className="w-4 h-4" />
-                </div>
-                <div>
-                  <h4 className="text-xs font-bold text-amber-300 flex items-center gap-2">
-                    <span>📌 NAMA KOP KARTU PELAJAR (Header Kartu Depan & Belakang)</span>
-                    <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-400/20 text-amber-200 border border-amber-400/30">
-                      Khusus Kartu
-                    </span>
-                  </h4>
-                  <p className="text-[10.5px] text-amber-200/70">
-                    Digunakan khusus untuk baris judul KOP Kartu Pelajar (Depan & Belakang).
-                  </p>
-                </div>
-              </div>
-              {madrasah.namaMadrasah && (
-                <div className="flex items-center gap-1.5">
-                  <button
-                    type="button"
-                    onClick={() => handleFieldChange('namaMadrasahKop', madrasah.namaMadrasah)}
-                    className="px-2.5 py-1 text-[11px] font-medium bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-400/40 rounded-md transition flex items-center gap-1"
-                    title="Samakan dengan Nama Madrasah Utama"
-                  >
-                    <span>Samakan dgn Nama Utama</span>
-                  </button>
-                  {madrasah.namaMadrasahKop && (
-                    <button
-                      type="button"
-                      onClick={() => handleFieldChange('namaMadrasahKop', '')}
-                      className="px-2 py-1 text-[10px] text-slate-400 hover:text-rose-300 transition"
-                      title="Kosongkan agar memakai nama utama secara otomatis"
-                    >
-                      Reset
-                    </button>
-                  )}
-                </div>
-              )}
-            </div>
-
-            <div className="space-y-1.5 pt-1">
-              <input
-                type="text"
-                value={madrasah.namaMadrasahKop ?? ''}
-                onChange={(e) => handleFieldChange('namaMadrasahKop', e.target.value)}
-                placeholder={madrasah.namaMadrasah || "Contoh: YAYASAN MA'ARIF NU - MI MA'ARIF NU 2 SANGGREMAN"}
-                className="w-full bg-slate-900 border border-amber-400/60 rounded-lg px-3 py-2.5 text-sm text-amber-100 font-bold focus:outline-none focus:border-amber-300 focus:ring-1 focus:ring-amber-400 shadow-inner"
-              />
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-[11px] text-slate-400">
-                <span className="text-amber-200/80">
-                  💡 <strong>Kepentingan KOP:</strong> Bebas ditulis lengkap dengan nama yayasan, cabang, atau singkatan resmi (misal: <em>YAYASAN AL-HIKMAH - MTSN 1 KOTA MALANG</em>).
-                </span>
-                <span className="text-[10px] font-mono text-amber-400/80">
-                  Pratinjau KOP: {madrasah.namaMadrasahKop || madrasah.namaMadrasah || '-'}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* 3. SEKSI TERPISAH: NAMA SATUAN PENDIDIKAN */}
+          {/* 2. SEKSI TERPISAH: NAMA SATUAN PENDIDIKAN */}
           <div className="md:col-span-2 space-y-2.5 p-4 bg-gradient-to-br from-emerald-950/30 via-slate-950/80 to-slate-950/90 rounded-xl border border-emerald-500/40 shadow-sm">
             <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-emerald-500/20">
               <div className="flex items-center gap-2">
