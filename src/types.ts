@@ -139,6 +139,7 @@ export interface PleskDeployOptions {
   dbUser?: string;
   dbPass?: string;
   includeMysqlBridge?: boolean;
+  targetHosting?: 'cpanel' | 'plesk';
 }
 
 export interface SuratKeteranganAktifConfig {

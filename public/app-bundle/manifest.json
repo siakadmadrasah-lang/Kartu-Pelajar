@@ -1,19 +1,21 @@
 {
   "files": [
+    "CPANEL_DEPLOY_masbagoes_kartupelajar.zip",
     "api/data.php",
     "api/health.php",
     "api/sync.php",
     "api/version.php",
     "assets/aistudio/.gitignore",
     "assets/html2canvas.esm-QH1iLAAe.js",
-    "assets/index-4oYOFoP9.js",
-    "assets/index-BzQjMKI0.css",
-    "assets/index.es-D2mmLIoC.js",
-    "assets/purify.es-CYR4BTuT.js",
+    "assets/index-BJWJ1-XC.js",
+    "assets/index-pAOzyLNX.css",
+    "assets/index.es-BxtLEsUJ.js",
+    "assets/purify.es-DedTAGkB.js",
     "auto_setup.php",
     "config.php",
+    "cpanel_deploy_kartu_pelajar.zip",
     "database.sql",
     "index.html"
   ],
-  "builtAt": "2026-09-06T03:16:57.960Z"
+  "builtAt": "2026-09-09T11:56:28.154Z"
 }

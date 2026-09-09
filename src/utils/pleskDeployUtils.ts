@@ -3,8 +3,15 @@ import { MadrasahInfo, Student, CardConfig, PleskDeployOptions, PageLoaderConfig
 
 export const DEFAULT_MYSQL_CONFIG = {
   dbHost: 'localhost',
-  dbName: 'jaenal_kartupelajar',
-  dbUser: 'jaenal_kartupelajar',
+  dbName: 'masbagoes_kartupelajar',
+  dbUser: 'masbagoes_kartupelajar',
+  dbPass: 'masbagus15',
+};
+
+export const DEFAULT_CPANEL_MYSQL_CONFIG = {
+  dbHost: 'localhost',
+  dbName: 'masbagoes_kartupelajar',
+  dbUser: 'masbagoes_kartupelajar',
   dbPass: 'masbagus15',
 };
 
@@ -339,6 +346,23 @@ function getDbConnection() {
           PRIMARY KEY (id)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
 
+        $pdo->exec("CREATE TABLE IF NOT EXISTS kop_surat (
+          id INT(11) NOT NULL AUTO_INCREMENT,
+          config_json LONGTEXT DEFAULT NULL,
+          updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+          PRIMARY KEY (id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
+
+        $pdo->exec("CREATE TABLE IF NOT EXISTS activity_logs (
+          id VARCHAR(100) NOT NULL,
+          action VARCHAR(255) NOT NULL,
+          operator VARCHAR(100) NOT NULL,
+          details TEXT DEFAULT NULL,
+          type VARCHAR(50) NOT NULL,
+          timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          PRIMARY KEY (id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
+
     } catch (PDOException $e) {
         // Jangan die/exit agar sistem otomatis beralih ke penyimpanan fallback file JSON tanpa error
         error_log('Koneksi MySQL gagal (' . DB_NAME . '): ' . $e->getMessage());
@@ -606,14 +630,17 @@ try {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Auto Setup MySQL Plesk - ${madrasah.namaMadrasah}</title>
+    <title>Auto Setup MySQL cPanel & Plesk - ${madrasah.namaMadrasah}</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex items-center justify-center p-4 font-sans">
     <div class="max-w-xl w-full bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden">
-        <div class="bg-gradient-to-r from-emerald-900 to-teal-900 p-6 text-white border-b border-emerald-700">
-            <h1 class="text-xl font-black uppercase">Plesk MySQL Auto-Setup</h1>
-            <p class="text-xs text-emerald-200 mt-1">Status Konfigurasi Database Otomatis di Hosting Plesk</p>
+        <div class="bg-gradient-to-r from-emerald-900 via-teal-900 to-slate-900 p-6 text-white border-b border-emerald-700">
+            <div class="flex items-center justify-between">
+                <h1 class="text-xl font-black uppercase tracking-wide">cPanel & Plesk MySQL Auto-Setup</h1>
+                <span class="px-2.5 py-1 bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 text-[10px] font-black rounded-full uppercase">1-Click Auto</span>
+            </div>
+            <p class="text-xs text-emerald-200 mt-1">Status Verifikasi & Migrasi Database MySQL Otomatis (public_html / httpdocs)</p>
         </div>
         <div class="p-6 space-y-4">
             <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-xs space-y-2 font-mono">
@@ -1833,6 +1860,45 @@ APP_URL=https://${options.domainName || 'madrasah.sch.id'}
     onProgress?.(90 + Math.round(metadata.percent * 0.1), `Mengompresi data: ${Math.round(metadata.percent)}%`);
   });
 
-  onProgress?.(100, 'Paket ZIP Plesk siap diunduh!');
+  onProgress?.(100, 'Paket ZIP siap diunduh!');
   return content;
+};
+
+/**
+ * Generate Deployment ZIP specifically optimized for cPanel (public_html)
+ * with automatic MySQL database synchronization pre-configured.
+ */
+export const createCpanelDeployZip = async (
+  madrasah: MadrasahInfo,
+  students: Student[],
+  cardConfig: CardConfig,
+  options?: Partial<PleskDeployOptions>,
+  loaderConfig?: PageLoaderConfig,
+  onProgress?: (percent: number, statusText: string) => void
+): Promise<Blob> => {
+  return createPleskDeployZip(
+    madrasah,
+    students,
+    cardConfig,
+    {
+      domainName: options?.domainName || madrasah.website || 'kartu.madrasah.sch.id',
+      phpVersion: '8.2',
+      enableHttpsRedirect: true,
+      enableGzip: true,
+      enableSpaRewrite: true,
+      includeCurrentData: true,
+      dbHost: options?.dbHost || DEFAULT_CPANEL_MYSQL_CONFIG.dbHost,
+      dbName: options?.dbName || DEFAULT_CPANEL_MYSQL_CONFIG.dbName,
+      dbUser: options?.dbUser || DEFAULT_CPANEL_MYSQL_CONFIG.dbUser,
+      dbPass: options?.dbPass || DEFAULT_CPANEL_MYSQL_CONFIG.dbPass,
+      includeMysqlBridge: true,
+      targetHosting: 'cpanel',
+      ...options,
+    },
+    loaderConfig,
+    (percent, text) => {
+      const cpanelText = text.replace(/Plesk httpdocs/g, 'cPanel public_html').replace(/Plesk/g, 'cPanel');
+      onProgress?.(percent, cpanelText);
+    }
+  );
 };

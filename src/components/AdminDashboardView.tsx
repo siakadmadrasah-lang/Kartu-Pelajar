@@ -498,7 +498,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
             </button>
           )}
 
-          {/* Button 7: Unduh ZIP Plesk */}
+          {/* Button 7: Unduh ZIP cPanel & Plesk */}
           <button
             onClick={onOpenPlesk}
             className="p-3 bg-slate-950/80 hover:bg-emerald-950/80 text-white rounded-xl border border-slate-800 hover:border-emerald-500/60 text-left transition space-y-1.5 group"
@@ -506,8 +506,8 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
             <div className="p-2 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-lg w-fit group-hover:scale-105 transition">
               <Server className="w-4 h-4" />
             </div>
-            <span className="font-bold block text-xs text-amber-300">Unduh ZIP Plesk</span>
-            <span className="text-[10px] text-slate-400 block">Paket Siap Pasang</span>
+            <span className="font-bold block text-xs text-amber-300">ZIP cPanel & Plesk</span>
+            <span className="text-[10px] text-emerald-400 block font-medium">Auto-Sync MySQL</span>
           </button>
         </div>
       </div>

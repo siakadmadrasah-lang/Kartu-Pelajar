@@ -844,6 +844,35 @@ app.get('/app-bundle/*', (req, res) => {
   }
 });
 
+app.get('/api/cpanel-info', (req, res) => {
+  res.json({
+    hosting: 'cpanel',
+    dbHost: 'localhost',
+    dbName: 'masbagoes_kartupelajar',
+    dbUser: 'masbagoes_kartupelajar',
+    dbPass: 'masbagus15',
+    targetFolder: 'public_html',
+    autoSetupUrl: '/auto_setup.php',
+    zipAvailable: fs.existsSync(path.resolve(process.cwd(), 'public/CPANEL_DEPLOY_masbagoes_kartupelajar.zip')),
+  });
+});
+
+app.get('/api/download-cpanel-zip', (req, res) => {
+  const candidatePaths = [
+    path.resolve(process.cwd(), 'public/CPANEL_DEPLOY_masbagoes_kartupelajar.zip'),
+    path.resolve(process.cwd(), 'dist/CPANEL_DEPLOY_masbagoes_kartupelajar.zip'),
+    path.resolve(process.cwd(), 'public/cpanel_deploy_kartu_pelajar.zip'),
+  ];
+
+  for (const cp of candidatePaths) {
+    if (fs.existsSync(cp)) {
+      return res.download(cp, 'CPANEL_DEPLOY_masbagoes_kartupelajar.zip');
+    }
+  }
+
+  res.status(404).json({ error: 'ZIP file belum di-generate. Silakan gunakan tombol unduh di browser.' });
+});
+
 // ==================== VITE & STATIC SERVING ====================
 async function startServer() {
   if (process.env.NODE_ENV !== 'production') {
